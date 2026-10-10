@@ -7,6 +7,7 @@ import {
   Receipt,
   BarChart3,
   UserCheck,
+  Building2,
   BookOpen,
   LogOut,
   X,
@@ -28,6 +29,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { to: "/invoices", icon: Receipt, label: "Invoices & Receipts", adminOnly: false },
     { to: "/reports", icon: BarChart3, label: "P&L Reports", adminOnly: true },
     { to: "/hr-management", icon: UserCheck, label: "HR Management", adminOnly: true },
+    { to: "/settings", icon: Building2, label: "Company & GST", adminOnly: true },
   ];
 
   return (

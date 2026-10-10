@@ -15,6 +15,7 @@ export const Layout: React.FC = () => {
     if (pathname === "/invoices") return "Invoices & Receipts";
     if (pathname === "/reports") return "P&L Financial Reports";
     if (pathname === "/hr-management") return "HR Staff Management";
+    if (pathname === "/settings") return "Company & GST Settings";
     return "IZEON Books";
   };
 

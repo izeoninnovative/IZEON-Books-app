@@ -11,6 +11,7 @@ import { StudentDetailPage } from "./pages/StudentDetailPage";
 import { InvoicesPage } from "./pages/InvoicesPage";
 import { AdminReportsPage } from "./pages/AdminReportsPage";
 import { AdminHRPage } from "./pages/AdminHRPage";
+import { CompanySettingsPage } from "./pages/CompanySettingsPage";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
               <Route element={<ProtectedRoute adminOnly={true} />}>
                 <Route path="/reports" element={<AdminReportsPage />} />
                 <Route path="/hr-management" element={<AdminHRPage />} />
+                <Route path="/settings" element={<CompanySettingsPage />} />
               </Route>
             </Route>
           </Route>

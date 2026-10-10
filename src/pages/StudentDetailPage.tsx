@@ -33,6 +33,11 @@ export const StudentDetailPage: React.FC = () => {
 
   // Print Invoice Modal State
   const [activeInvoice, setActiveInvoice] = useState<any>(null);
+  const [company, setCompany] = useState<any>(null);
+
+  useEffect(() => {
+    api.get("/company").then((res) => setCompany(res.data.data)).catch(console.error);
+  }, []);
 
   const fetchStudentData = async () => {
     try {
@@ -565,12 +570,18 @@ export const StudentDetailPage: React.FC = () => {
             <div className="mt-6 space-y-6 text-slate-200" id="printable-receipt">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-xl font-black tracking-tight text-white">IZEON INNOVATIVE</h2>
-                  <p className="text-xs text-slate-400">Academy of Computer Software Training</p>
-                  <p className="text-xs text-slate-400">Tamil Nadu, India</p>
+                  <h2 className="text-xl font-black tracking-tight text-white uppercase">
+                    {company?.companyName || "IZEON INNOVATIVE"}
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    {company?.tagline || "Academy of Computer Software Training"}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {[company?.address, company?.city, company?.state].filter(Boolean).join(", ") || "Tamil Nadu, India"}
+                  </p>
                   {activeInvoice.invoiceType === "GST" && (
-                    <p className="text-xs text-indigo-400 font-mono mt-1">
-                      GSTIN: 33AAACI1234F1Z5
+                    <p className="text-xs text-indigo-400 font-mono mt-1 font-bold">
+                      GSTIN: {company?.gstin || "N/A"}
                     </p>
                   )}
                 </div>
