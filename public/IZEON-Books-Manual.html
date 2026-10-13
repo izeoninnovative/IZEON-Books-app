@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IZEON Books - Enterprise Operations & Technical Manual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #154E98;
+      --primary-dark: #0f3b75;
+      --primary-light: #eef5fc;
+      --crimson: #8a252d;
+      --crimson-light: #fdf2f3;
+      --emerald: #059669;
+      --emerald-light: #ecfdf5;
+      --amber: #d97706;
+      --amber-light: #fffbeb;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: var(--slate-800);
+      background-color: #f3f6fb;
+      line-height: 1.6;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .top-action-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(21, 78, 152, 0.95);
+      backdrop-filter: blur(8px);
+      color: white;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .top-action-bar h2 {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .print-btn {
+      background: white;
+      color: var(--primary);
+      border: none;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.2s;
+    }
+
+    .print-btn:hover {
+      background: #f1f5f9;
+      transform: translateY(-1px);
+    }
+
+    .document-container {
+      max-width: 900px;
+      margin: 32px auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+      border: 1px solid var(--slate-200);
+    }
+
+    /* Cover Page */
+    .cover-page {
+      background: linear-gradient(135deg, #154E98 0%, #0d2c55 100%);
+      color: white;
+      padding: 64px 48px;
+      position: relative;
+    }
+
+    .cover-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .cover-title {
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .cover-title span {
+      color: #93c5fd;
+    }
+
+    .cover-subtitle {
+      font-size: 17px;
+      color: #e2e8f0;
+      font-weight: 400;
+      max-width: 650px;
+      line-height: 1.5;
+      margin-bottom: 40px;
+    }
+
+    .cover-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      padding-top: 28px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .meta-box span.label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .meta-box span.val {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    /* Content Area */
+    .content-area {
+      padding: 48px;
+    }
+
+    h2.section-header {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 40px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h3.sub-header {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-top: 24px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: var(--slate-600);
+      margin-bottom: 14px;
+      font-size: 13.5px;
+      text-align: justify;
+    }
+
+    ul, ol {
+      margin-left: 20px;
+      margin-bottom: 16px;
+      color: var(--slate-700);
+    }
+
+    li {
+      margin-bottom: 6px;
+      font-size: 13.5px;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0 24px 0;
+      font-size: 12.5px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--slate-200);
+    }
+
+    th {
+      background: var(--slate-100);
+      color: var(--slate-700);
+      font-weight: 700;
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--slate-200);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--slate-100);
+      color: var(--slate-700);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--slate-50);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-success { background: var(--emerald-light); color: var(--emerald); border: 1px solid #a7f3d0; }
+    .badge-error { background: var(--crimson-light); color: var(--crimson); border: 1px solid #fecdd3; }
+    .badge-info { background: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
+    .badge-warn { background: var(--amber-light); color: var(--amber); border: 1px solid #fde68a; }
+
+    /* Callout Alert Boxes */
+    .callout {
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border-left: 4px solid;
+      background: var(--slate-50);
+    }
+
+    .callout-blue {
+      border-color: var(--primary);
+      background: #f0f7ff;
+    }
+
+    .callout-green {
+      border-color: var(--emerald);
+      background: #f0fdf4;
+    }
+
+    .callout-red {
+      border-color: var(--crimson);
+      background: #fff1f2;
+    }
+
+    .callout h4 {
+      font-size: 13.5px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .callout-blue h4 { color: var(--primary); }
+    .callout-green h4 { color: var(--emerald); }
+    .callout-red h4 { color: var(--crimson); }
+
+    .callout p {
+      margin: 0;
+      font-size: 13px;
+    }
+
+    /* Code Blocks */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: var(--slate-100);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--slate-800);
+    }
+
+    /* Footer */
+    .doc-footer {
+      border-top: 1px solid var(--slate-200);
+      padding: 24px 48px;
+      background: var(--slate-50);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--slate-600);
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: white;
+      }
+      .top-action-bar {
+        display: none;
+      }
+      .document-container {
+        margin: 0;
+        max-width: 100%;
+        box-shadow: none;
+        border: none;
+      }
+      .cover-page {
+        padding: 40px 30px;
+        page-break-after: always;
+      }
+      .content-area {
+        padding: 30px;
+      }
+      h2.section-header {
+        page-break-after: avoid;
+        margin-top: 30px;
+      }
+      table, .callout {
+        page-break-inside: avoid;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Floating Bar (Hidden in Print) -->
+  <div class="top-action-bar">
+    <h2>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      IZEON Books — Official Company Manual
+    </h2>
+    <button class="print-btn" onclick="window.print()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print / Save as PDF
+    </button>
+  </div>
+
+  <div class="document-container">
+
+    <!-- Cover Page -->
+    <div class="cover-page">
+      <div class="cover-badge">Enterprise Edition • ISO Standards</div>
+      <h1 class="cover-title">IZEON <span>Books</span></h1>
+      <p class="cover-subtitle">
+        Academy Financial Accounting, Smart Student Ledger, GST Tax Invoicing & Real-time P&L ERP System.
+      </p>
+
+      <div class="cover-meta-grid">
+        <div class="meta-box">
+          <span class="label">Organization</span>
+          <span class="val">IZEON INNOVATIVE</span>
+        </div>
+        <div class="meta-box">
+          <span class="label">Release Version</span>
+          <span class="val">v2.0.0 (Enterprise)</span>
+        </div>
+        <div class="meta-box">
+          <span class="label">Documentation Date</span>
+          <span class="val">October 2026</span>
+        </div>
+        <div class="meta-box">
+          <span class="label">Compliance</span>
+          <span class="val">GST & Double-Entry</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+
+      <!-- Section 1 -->
+      <h2 class="section-header">
+        <span>1. System Overview & Core Capabilities</span>
+      </h2>
+      <p>
+        <strong>IZEON Books</strong> is the centralized financial operating system engineered specifically for <strong>IZEON INNOVATIVE Academy of Computer Software Training</strong>. The application bridges the gap between student admissions, monthly fee collection, automated GST invoicing, operating overheads, staff salary disbursement, and high-level Profit & Loss auditing.
+      </p>
+
+      <div class="callout callout-blue">
+        <h4>Key System Highlights</h4>
+        <p>
+          Automated EMI schedule creation, strict excess-payment blocking, auto-clearance of pending installments upon full fee settlement, and real-time executive financial snapshots.
+        </p>
+      </div>
+
+      <!-- Section 2 -->
+      <h2 class="section-header">
+        <span>2. User Access & Role-Based Permissions (RBAC)</span>
+      </h2>
+      <p>
+        The platform enforces zero-trust access separation between Executive Management (Admin) and Academy Front-Desk/HR staff:
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Module Name</th>
+            <th>Operational Scope</th>
+            <th>Admin Role</th>
+            <th>HR Staff Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Dashboard KPIs</strong></td>
+            <td>High-level revenue metrics, admissions & collection overview</td>
+            <td><span class="badge badge-success">Full Access</span></td>
+            <td><span class="badge badge-success">Full Access</span></td>
+          </tr>
+          <tr>
+            <td><strong>Student Directory</strong></td>
+            <td>Search, filter active/dropped students, browse records</td>
+            <td><span class="badge badge-success">Full Access</span></td>
+            <td><span class="badge badge-success">Full Access</span></td>
+          </tr>
+          <tr>
+            <td><strong>New Admission</strong></td>
+            <td>Enroll new student, configure Lumpsum or EMI schedule</td>
+            <td><span class="badge badge-success">Full Access</span></td>
+            <td><span class="badge badge-success">Full Access</span></td>
+          </tr>
+          <tr>
+            <td><strong>Student Ledger</strong></td>
+            <td>View financial breakdown, collect installments & print receipts</td>
+            <td><span class="badge badge-success">Full Access</span></td>
+            <td><span class="badge badge-success">Full Access</span></td>
+          </tr>
+          <tr>
+            <td><strong>Invoices Ledger</strong></td>
+            <td>Browse all generated GST tax invoices and receipts</td>
+            <td><span class="badge badge-success">Full Access</span></td>
+            <td><span class="badge badge-success">Full Access</span></td>
+          </tr>
+          <tr>
+            <td><strong>P&L Financial Reports</strong></td>
+            <td>Net institute profit, revenue vs overhead & trainer payroll</td>
+            <td><span class="badge badge-success">Full Access</span></td>
+            <td><span class="badge badge-error">Strictly Blocked</span></td>
+          </tr>
+          <tr>
+            <td><strong>HR Staff Management</strong></td>
+            <td>Create, revoke, oversee staff login accounts</td>
+            <td><span class="badge badge-success">Full Access</span></td>
+            <td><span class="badge badge-error">Strictly Blocked</span></td>
+          </tr>
+          <tr>
+            <td><strong>Company & GST Settings</strong></td>
+            <td>Configure registered GSTIN, legal address, institute branding</td>
+            <td><span class="badge badge-success">Full Access</span></td>
+            <td><span class="badge badge-error">Strictly Blocked</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Section 3 -->
+      <h2 class="section-header page-break">
+        <span>3. Student Admission & Fee Structuring</span>
+      </h2>
+      <p>
+        Enrolling a student dynamically builds their complete financial schedule:
+      </p>
+      <ul>
+        <li><strong>Demographics:</strong> Candidate full name, verified email, WhatsApp/Phone contact, Date of Birth, and residential address.</li>
+        <li><strong>Course Selection:</strong> Automatically determines base tuition fee and course duration.</li>
+        <li><strong>Payment Plan:</strong>
+          <ul>
+            <li><em>Lumpsum:</em> Single payment covering tuition in full with optional promotional discount.</li>
+            <li><em>EMI Installment Plan:</em> Flexible down payment upfront; the remaining balance is divided into 2 to 12 monthly installments with customizable due dates (e.g. 5th or 10th of every month).</li>
+          </ul>
+        </li>
+        <li><strong>Tax Classification:</strong> Supports GST Tax Invoice (18% split into 9% CGST + 9% SGST) or standard academy receipt format.</li>
+      </ul>
+
+      <!-- Section 4 -->
+      <h2 class="section-header">
+        <span>4. Financial Rules & Smart EMI Payment Engine</span>
+      </h2>
+
+      <div class="callout callout-green">
+        <h4>1. Automatic Installment Clearance (Auto-Clear Engine)</h4>
+        <p>
+          When a student decides to clear their entire remaining balance at once, the system records the payment and <strong>automatically marks all subsequent pending EMI installments (#5, #6, #7, etc.) as PAID / Cleared in Full</strong>. No manual status editing is required.
+        </p>
+      </div>
+
+      <div class="callout callout-red">
+        <h4>2. Strict Excess Payment Prevention (Zero Overpayment)</h4>
+        <p>
+          The financial engine strictly protects against accepting any amount that exceeds the student's actual outstanding balance. Both the client-side modal and backend APIs reject excess collections, ensuring books always balance with exact revenue figures.
+        </p>
+      </div>
+
+      <h3 class="sub-header">One-Click Quick Action Options</h3>
+      <p>
+        Inside the EMI payment modal, the operator is provided with smart shortcuts:
+      </p>
+      <ul>
+        <li><code>[ Pay Due EMI ]</code> — Automatically loads the exact installment amount due.</li>
+        <li><code>[ Pay Full Balance ]</code> — Automatically loads the total outstanding balance for full fee closure in a single click.</li>
+      </ul>
+
+      <!-- Section 5 -->
+      <h2 class="section-header page-break">
+        <span>5. Invoicing & Official GST Compliance</span>
+      </h2>
+      <p>
+        Every payment captured generates an immutable invoice record with sequential format <code>INV-YYYYMMDD-XXXX</code>:
+      </p>
+      <ul>
+        <li><strong>Legal Entity Header:</strong> IZEON INNOVATIVE, Academy of Computer Software Training.</li>
+        <li><strong>GSTIN Display:</strong> Official 15-digit GST identification number printed prominently on all tax invoices.</li>
+        <li><strong>Tax Segregation:</strong> Clear calculation of Base Taxable Value, CGST (9%), SGST (9%), and Net Payment Amount.</li>
+        <li><strong>Printer Compatibility:</strong> Optimized for standard A4 desktop printing and PDF archival.</li>
+      </ul>
+
+      <!-- Section 6 -->
+      <h2 class="section-header">
+        <span>6. Profit & Loss Auditing & Expense Tracker</span>
+      </h2>
+      <p>
+        Executive management can review profitability across any selected month or entire fiscal year using the dynamic P&L formula:
+      </p>
+
+      <div class="callout callout-blue">
+        <h4>Net Operating Surplus Equation</h4>
+        <p style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--primary);">
+          Net Profit = [ Total Student Collections ] - [ Operational Expenses + Staff Salaries ]
+        </p>
+      </div>
+
+      <ul>
+        <li><strong>Operating Overheads:</strong> Categorized tracking for Academy Rent, Electricity & Utilities, Marketing & Ads, Hardware/Equipment, and Office Maintenance.</li>
+        <li><strong>Trainer & Staff Payroll:</strong> Disbursement records detailing Employee Name, Designation, Month/Year, Paid Amount, and Bank Transfer / UTR reference.</li>
+      </ul>
+
+      <!-- Section 7 -->
+      <h2 class="section-header">
+        <span>7. Notification & Feedback System</span>
+      </h2>
+      <p>
+        Native browser alerts have been replaced with a high-performance floating Toast notification system matching the academy's branding:
+      </p>
+      <ul>
+        <li><strong>Success:</strong> Emerald alert with auto-dismiss countdown on invoice creation, payment recording, and admissions.</li>
+        <li><strong>Error:</strong> Crimson alert when invalid credentials or excess payment attempts occur.</li>
+        <li><strong>Warning / Info:</strong> Amber & Sapphire blue notices for session changes and informational system hints.</li>
+      </ul>
+
+    </div>
+
+    <!-- Document Footer -->
+    <div class="doc-footer">
+      <span>© 2026 IZEON INNOVATIVE — Academy of Computer Software Training</span>
+      <span>Confidential • Internal Operations Manual</span>
+    </div>
+
+  </div>
+
+</body>
+</html>

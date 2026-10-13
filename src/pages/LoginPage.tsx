@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Lock, Mail, ArrowRight, AlertCircle, Sparkles } from "lucide-react";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
 import logoImg from "../assets/interview logo.png";
 
 export const LoginPage: React.FC = () => {
@@ -12,6 +13,7 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const { login } = useAuth();
+  const { success, error: notifyError } = useNotification();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,10 +25,13 @@ export const LoginPage: React.FC = () => {
       const res = await api.post("/auth/login", { email, password });
       if (res.data.success) {
         login(res.data.data.token, res.data.data.user);
+        success(`Welcome back, ${res.data.data.user.username}!`, "Signed In");
         navigate("/");
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Invalid credentials. Please try again.");
+      const msg = err.response?.data?.message || "Invalid credentials. Please try again.";
+      setError(msg);
+      notifyError(msg, "Authentication Failed");
     } finally {
       setLoading(false);
     }

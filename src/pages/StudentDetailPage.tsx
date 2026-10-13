@@ -16,10 +16,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import api from "../api/client";
+import { useNotification } from "../context/NotificationContext";
 import logoImg from "../assets/interview logo.png";
 
 export const StudentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { success, error: notifyError } = useNotification();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +62,9 @@ export const StudentDetailPage: React.FC = () => {
 
   const openPayModal = (emi: any) => {
     setSelectedEmi(emi);
-    setPayAmount(emi.amount);
+    const remaining = feePlan?.balanceAmount ?? emi.amount;
+    // Suggest the exact EMI amount or whatever balance is left, whichever is smaller
+    setPayAmount(Math.min(emi.amount, remaining));
     setPaymentMethod("UPI");
     setTransactionRef("");
     setPaySuccessMsg(null);
@@ -70,23 +74,53 @@ export const StudentDetailPage: React.FC = () => {
     e.preventDefault();
     if (!selectedEmi) return;
 
+    const remaining = feePlan?.balanceAmount ?? 0;
+    if (remaining <= 0) {
+      notifyError("This student has already fully paid all course fees.", "Fee Already Cleared");
+      return;
+    }
+
+    const enteredAmount = Number(payAmount);
+    if (enteredAmount <= 0) {
+      notifyError("Please enter a valid payment amount greater than zero.", "Invalid Amount");
+      return;
+    }
+
+    if (enteredAmount > remaining) {
+      notifyError(
+        `Payment cannot exceed the remaining balance of ₹${remaining.toLocaleString()}. Please enter up to ₹${remaining.toLocaleString()}.`,
+        "Excess Payment Blocked"
+      );
+      return;
+    }
+
     try {
       setPayLoading(true);
-      const res = await api.post("/payments/emi", {
+      const res = await api.post("/payments/pay-emi", {
         emiScheduleId: selectedEmi.id,
-        amountPaid: Number(payAmount),
+        amountPaid: enteredAmount,
         paymentMethod,
         transactionRef: transactionRef || undefined,
       });
 
       const newInv = res.data.data?.invoice?.invoiceNo;
-      setPaySuccessMsg(`Payment recorded successfully! Invoice #${newInv} generated.`);
+      const isNowFullyPaid = (res.data.data?.remainingBalance ?? 0) <= 0;
+
+      if (isNowFullyPaid) {
+        setPaySuccessMsg(`Full fee cleared! Invoice #${newInv} generated. All remaining EMIs resolved.`);
+        success(`Full fee cleared! Invoice #${newInv} generated. All EMIs marked Paid.`, "Full Payment Completed");
+      } else {
+        setPaySuccessMsg(`Payment recorded successfully! Invoice #${newInv} generated.`);
+        success(`Payment recorded! Invoice #${newInv} generated.`, "EMI Paid Successfully");
+      }
+
       setTimeout(() => {
         setSelectedEmi(null);
         fetchStudentData();
       }, 1500);
     } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to record payment");
+      const msg = err.response?.data?.message || "Failed to record payment";
+      notifyError(msg, "Payment Failed");
     } finally {
       setPayLoading(false);
     }
@@ -303,7 +337,7 @@ export const StudentDetailPage: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {emiSchedules && emiSchedules.length > 0 ? (
                   emiSchedules.map((emi: any) => {
-                    const isPaid = emi.status === "PAID";
+                    const isEffectivelyPaid = emi.status === "PAID" || isPaidOff;
                     return (
                       <tr key={emi.id} className="hover:bg-slate-50/70 transition-colors">
                         <td className="px-6 py-4 font-semibold text-slate-900">
@@ -322,12 +356,12 @@ export const StudentDetailPage: React.FC = () => {
                         <td className="px-6 py-4">
                           <span
                             className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                              isPaid
+                              isEffectivelyPaid
                                 ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                                 : "bg-amber-50 text-amber-700 border border-amber-200"
                             }`}
                           >
-                            {isPaid ? (
+                            {isEffectivelyPaid ? (
                               <>
                                 <CheckCircle2 className="w-3 h-3" /> Paid
                               </>
@@ -341,10 +375,12 @@ export const StudentDetailPage: React.FC = () => {
                         <td className="px-6 py-4 text-xs text-slate-500">
                           {emi.paidDate
                             ? new Date(emi.paidDate).toLocaleDateString("en-IN")
+                            : isPaidOff
+                            ? "Cleared in Full"
                             : "—"}
                         </td>
                         <td className="px-6 py-4 text-right">
-                          {!isPaid ? (
+                          {!isEffectivelyPaid ? (
                             <button
                               onClick={() => openPayModal(emi)}
                               className="px-3.5 py-1.5 rounded-lg bg-[#1656a6] hover:bg-[#124587] text-[#F7F0E8] text-xs font-semibold shadow-2xs transition cursor-pointer"
@@ -469,25 +505,61 @@ export const StudentDetailPage: React.FC = () => {
               Due Date: {new Date(selectedEmi.dueDate).toLocaleDateString()}
             </p>
 
+            {/* Remaining Balance Summary Pill */}
+            <div className="mt-4 p-3 rounded-xl bg-blue-50/70 border border-blue-200/80 flex items-center justify-between text-xs">
+              <span className="text-slate-600 font-medium">Total Pending Balance:</span>
+              <span className="font-bold text-[#1656a6] font-mono text-sm">
+                ₹{(feePlan?.balanceAmount || 0).toLocaleString()}
+              </span>
+            </div>
+
             {paySuccessMsg ? (
               <div className="my-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
                 <span>{paySuccessMsg}</span>
               </div>
             ) : (
-              <form onSubmit={handlePayEmi} className="space-y-4 mt-5">
+              <form onSubmit={handlePayEmi} className="space-y-4 mt-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Installment Amount (₹)
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700">
+                      Payment Amount (₹)
+                    </label>
+                    {/* Quick Fill Options */}
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setPayAmount(Math.min(selectedEmi.amount, feePlan?.balanceAmount || selectedEmi.amount))}
+                        className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                      >
+                        EMI (₹{Math.min(selectedEmi.amount, feePlan?.balanceAmount || selectedEmi.amount).toLocaleString()})
+                      </button>
+                      {(feePlan?.balanceAmount || 0) > selectedEmi.amount && (
+                        <button
+                          type="button"
+                          onClick={() => setPayAmount(feePlan?.balanceAmount || 0)}
+                          className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition cursor-pointer"
+                        >
+                          Pay Full Balance (₹{(feePlan?.balanceAmount || 0).toLocaleString()})
+                        </button>
+                      )}
+                    </div>
+                  </div>
                   <input
                     type="number"
                     value={payAmount}
                     onChange={(e) => setPayAmount(Number(e.target.value))}
                     required
                     min={1}
+                    max={feePlan?.balanceAmount || selectedEmi.amount}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm focus:outline-none focus:bg-white focus:border-[#1656a6]"
                   />
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1">
+                    <span>Cannot exceed remaining balance</span>
+                    <span className="font-semibold text-slate-600">
+                      Max: ₹{(feePlan?.balanceAmount || 0).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
 
                 <div>

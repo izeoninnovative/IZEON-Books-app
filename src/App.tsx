@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import { Layout } from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -16,33 +17,35 @@ import { CompanySettingsPage } from "./pages/CompanySettingsPage";
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Route */}
-          <Route path="/login" element={<LoginPage />} />
+      <NotificationProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Public Route */}
+            <Route path="/login" element={<LoginPage />} />
 
-          {/* Protected Routes for Authenticated Users (Admin & HR) */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<Layout />}>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/students" element={<StudentsPage />} />
-              <Route path="/students/new" element={<NewAdmissionPage />} />
-              <Route path="/students/:id" element={<StudentDetailPage />} />
-              <Route path="/invoices" element={<InvoicesPage />} />
+            {/* Protected Routes for Authenticated Users (Admin & HR) */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<Layout />}>
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/students" element={<StudentsPage />} />
+                <Route path="/students/new" element={<NewAdmissionPage />} />
+                <Route path="/students/:id" element={<StudentDetailPage />} />
+                <Route path="/invoices" element={<InvoicesPage />} />
 
-              {/* Strict Admin Only Routes */}
-              <Route element={<ProtectedRoute adminOnly={true} />}>
-                <Route path="/reports" element={<AdminReportsPage />} />
-                <Route path="/hr-management" element={<AdminHRPage />} />
-                <Route path="/settings" element={<CompanySettingsPage />} />
+                {/* Strict Admin Only Routes */}
+                <Route element={<ProtectedRoute adminOnly={true} />}>
+                  <Route path="/reports" element={<AdminReportsPage />} />
+                  <Route path="/hr-management" element={<AdminHRPage />} />
+                  <Route path="/settings" element={<CompanySettingsPage />} />
+                </Route>
               </Route>
             </Route>
-          </Route>
 
-          {/* Catch-all redirect to Dashboard */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+            {/* Catch-all redirect to Dashboard */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

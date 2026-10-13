@@ -62,3 +62,14 @@ table,
   background-color: #1656a6;
   color: #ffffff;
 }
+
+/* Toast Notification countdown animation */
+@keyframes shrinkWidth {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+

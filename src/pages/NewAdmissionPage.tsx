@@ -11,9 +11,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 import api from "../api/client";
+import { useNotification } from "../context/NotificationContext";
 
 export const NewAdmissionPage: React.FC = () => {
   const navigate = useNavigate();
+  const { success, error: notifyError } = useNotification();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -109,10 +111,16 @@ export const NewAdmissionPage: React.FC = () => {
 
       const res = await api.post("/students", payload);
       if (res.data.success) {
+        success(
+          `Student "${payload.name}" enrolled successfully! Invoice receipt generated.`,
+          "Admission Confirmed"
+        );
         navigate(`/students/${res.data.data.student.id}`);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to enroll student. Please check input.");
+      const msg = err.response?.data?.message || "Failed to enroll student. Please check input.";
+      setError(msg);
+      notifyError(msg, "Admission Failed");
     } finally {
       setLoading(false);
     }
