@@ -122,16 +122,16 @@ export const NewAdmissionPage: React.FC = () => {
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Title */}
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
           Student Admission & Fee Setup
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
           Enroll student, configure Lumpsum or EMI schedule, and generate GST invoice receipt.
         </p>
       </div>
 
       {error && (
-        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2.5">
+        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2.5">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
@@ -141,15 +141,15 @@ export const NewAdmissionPage: React.FC = () => {
         {/* Left Column: Form Details (2 Cols on desktop) */}
         <div className="lg:col-span-2 space-y-6">
           {/* 1. Student Personal Information */}
-          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <UserPlus className="w-4 h-4 text-indigo-400" />
+          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <UserPlus className="w-4 h-4 text-[#1656a6]" />
               <span>1. Student Profile</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Full Name *
                 </label>
                 <input
@@ -158,12 +158,12 @@ export const NewAdmissionPage: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. John Doe"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#1656a6]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Email Address *
                 </label>
                 <input
@@ -172,12 +172,12 @@ export const NewAdmissionPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="john@example.com"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#1656a6]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Phone Number *
                 </label>
                 <input
@@ -186,12 +186,12 @@ export const NewAdmissionPage: React.FC = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="9876543210"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#1656a6]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Date of Birth (DOB) *
                 </label>
                 <input
@@ -199,13 +199,13 @@ export const NewAdmissionPage: React.FC = () => {
                   required
                   value={dob}
                   onChange={(e) => setDob(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#1656a6]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Residential Address
               </label>
               <textarea
@@ -213,27 +213,27 @@ export const NewAdmissionPage: React.FC = () => {
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Street address, City, Pincode"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#1656a6]"
               />
             </div>
           </div>
 
           {/* 2. Course & Fee Configuration */}
-          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-indigo-400" />
+          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-[#1656a6]" />
               <span>2. Course & Fee Setup</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Select Course *
                 </label>
                 <select
                   value={courseId}
                   onChange={(e) => handleCourseChange(Number(e.target.value))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1656a6]"
                 >
                   {courses.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -244,41 +244,41 @@ export const NewAdmissionPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Base Fee (₹)
                 </label>
                 <input
                   type="number"
                   value={baseFee}
                   onChange={(e) => setBaseFee(Number(e.target.value))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1656a6]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Scholarship / Discount (₹)
                 </label>
                 <input
                   type="number"
                   value={discountAmount}
                   onChange={(e) => setDiscountAmount(Number(e.target.value))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1656a6]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Invoice Type *
                 </label>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setInvoiceType("GST")}
-                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold border transition ${
+                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold border transition cursor-pointer ${
                       invoiceType === "GST"
-                        ? "bg-indigo-600 text-white border-indigo-500"
-                        : "bg-slate-800 text-slate-400 border-slate-700 hover:text-white"
+                        ? "bg-[#1656a6] text-[#F7F0E8] border-[#1656a6] shadow-xs"
+                        : "bg-slate-50 text-slate-600 border-slate-200 hover:text-slate-900"
                     }`}
                   >
                     GST (18%)
@@ -286,10 +286,10 @@ export const NewAdmissionPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setInvoiceType("NON_GST")}
-                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold border transition ${
+                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold border transition cursor-pointer ${
                       invoiceType === "NON_GST"
-                        ? "bg-indigo-600 text-white border-indigo-500"
-                        : "bg-slate-800 text-slate-400 border-slate-700 hover:text-white"
+                        ? "bg-[#1656a6] text-[#F7F0E8] border-[#1656a6] shadow-xs"
+                        : "bg-slate-50 text-slate-600 border-slate-200 hover:text-slate-900"
                     }`}
                   >
                     Non-GST
@@ -300,9 +300,9 @@ export const NewAdmissionPage: React.FC = () => {
           </div>
 
           {/* 3. Payment Plan: Lumpsum vs EMI */}
-          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-indigo-400" />
+          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-[#1656a6]" />
               <span>3. Payment Schedule Plan</span>
             </h3>
 
@@ -310,8 +310,8 @@ export const NewAdmissionPage: React.FC = () => {
               <label
                 className={`flex-1 p-3.5 rounded-xl border flex items-center gap-3 cursor-pointer transition ${
                   planType === "LUMPSUM"
-                    ? "bg-indigo-600/10 border-indigo-500 text-white"
-                    : "bg-slate-800/40 border-slate-700 text-slate-400"
+                    ? "bg-blue-50/70 border-[#1656a6] text-slate-900 shadow-xs"
+                    : "bg-slate-50/60 border-slate-200 text-slate-600"
                 }`}
               >
                 <input
@@ -321,20 +321,20 @@ export const NewAdmissionPage: React.FC = () => {
                   onChange={() => setPlanType("LUMPSUM")}
                   className="hidden"
                 />
-                <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+                <div className="p-2 rounded-lg bg-blue-100 text-[#1656a6]">
                   <Receipt className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold">Lumpsum (One-Time)</p>
-                  <p className="text-[11px] text-slate-400">Pay full tuition upfront</p>
+                  <p className="text-xs font-bold text-slate-900">Lumpsum (One-Time)</p>
+                  <p className="text-[11px] text-slate-500">Pay full tuition upfront</p>
                 </div>
               </label>
 
               <label
                 className={`flex-1 p-3.5 rounded-xl border flex items-center gap-3 cursor-pointer transition ${
                   planType === "EMI"
-                    ? "bg-purple-600/10 border-purple-500 text-white"
-                    : "bg-slate-800/40 border-slate-700 text-slate-400"
+                    ? "bg-purple-50/70 border-purple-500 text-slate-900 shadow-xs"
+                    : "bg-slate-50/60 border-slate-200 text-slate-600"
                 }`}
               >
                 <input
@@ -344,38 +344,38 @@ export const NewAdmissionPage: React.FC = () => {
                   onChange={() => setPlanType("EMI")}
                   className="hidden"
                 />
-                <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+                <div className="p-2 rounded-lg bg-purple-100 text-purple-700">
                   <Calendar className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold">Monthly EMI Plan</p>
-                  <p className="text-[11px] text-slate-400">Downpayment + monthly installments</p>
+                  <p className="text-xs font-bold text-slate-900">Monthly EMI Plan</p>
+                  <p className="text-[11px] text-slate-500">Downpayment + monthly installments</p>
                 </div>
               </label>
             </div>
 
             {planType === "EMI" && (
-              <div className="pt-3 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Down Payment (₹)
                   </label>
                   <input
                     type="number"
                     value={downPayment}
                     onChange={(e) => setDownPayment(Number(e.target.value))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1656a6]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Tenure (Months)
                   </label>
                   <select
                     value={emiMonths}
                     onChange={(e) => setEmiMonths(Number(e.target.value))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1656a6]"
                   >
                     <option value={2}>2 Months</option>
                     <option value={3}>3 Months</option>
@@ -386,13 +386,13 @@ export const NewAdmissionPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Monthly Due Date
                   </label>
                   <select
                     value={emiDueDay}
                     onChange={(e) => setEmiDueDay(Number(e.target.value))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1656a6]"
                   >
                     <option value={1}>1st of every month</option>
                     <option value={5}>5th of every month</option>
@@ -405,21 +405,21 @@ export const NewAdmissionPage: React.FC = () => {
           </div>
 
           {/* 4. Payment Mode */}
-          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <IndianRupee className="w-4 h-4 text-indigo-400" />
+          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <IndianRupee className="w-4 h-4 text-[#1656a6]" />
               <span>4. Initial Payment Details</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Payment Mode *
                 </label>
                 <select
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value as any)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1656a6]"
                 >
                   <option value="UPI">UPI / GPay / PhonePe</option>
                   <option value="CASH">Cash in Hand</option>
@@ -430,7 +430,7 @@ export const NewAdmissionPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Transaction Ref / UTR #
                 </label>
                 <input
@@ -438,7 +438,7 @@ export const NewAdmissionPage: React.FC = () => {
                   value={transactionRef}
                   onChange={(e) => setTransactionRef(e.target.value)}
                   placeholder="e.g. UPI-12345678"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#1656a6]"
                 />
               </div>
             </div>
@@ -447,33 +447,33 @@ export const NewAdmissionPage: React.FC = () => {
 
         {/* Right Column: Live Bill Breakdown */}
         <div className="space-y-6">
-          <div className="p-6 rounded-2xl bg-slate-900/90 border border-indigo-500/30 shadow-2xl sticky top-20 space-y-5">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-indigo-400" />
+          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-md sticky top-20 space-y-5">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-[#1656a6]" />
                 <span>Invoice Breakdown</span>
               </h3>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-[#1656a6] border border-blue-200">
                 {invoiceType}
               </span>
             </div>
 
-            <div className="space-y-2.5 text-xs text-slate-400">
+            <div className="space-y-2.5 text-xs text-slate-500">
               <div className="flex justify-between">
                 <span>Course Base Fee:</span>
-                <span className="text-white font-medium">₹{baseFee.toLocaleString("en-IN")}</span>
+                <span className="text-slate-900 font-semibold">₹{baseFee.toLocaleString("en-IN")}</span>
               </div>
 
               {discountAmount > 0 && (
-                <div className="flex justify-between text-emerald-400">
+                <div className="flex justify-between text-emerald-600 font-medium">
                   <span>Scholarship Discount:</span>
                   <span>-₹{discountAmount.toLocaleString("en-IN")}</span>
                 </div>
               )}
 
-              <div className="flex justify-between border-t border-slate-800/80 pt-2">
+              <div className="flex justify-between border-t border-slate-100 pt-2">
                 <span>Taxable Amount:</span>
-                <span className="text-white font-medium">
+                <span className="text-slate-900 font-semibold">
                   ₹{taxableAmount.toLocaleString("en-IN")}
                 </span>
               </div>
@@ -482,41 +482,41 @@ export const NewAdmissionPage: React.FC = () => {
                 <>
                   <div className="flex justify-between text-[11px]">
                     <span>CGST (9%):</span>
-                    <span className="text-slate-300">₹{cgst.toLocaleString("en-IN")}</span>
+                    <span className="text-slate-700">₹{cgst.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between text-[11px]">
                     <span>SGST (9%):</span>
-                    <span className="text-slate-300">₹{sgst.toLocaleString("en-IN")}</span>
+                    <span className="text-slate-700">₹{sgst.toLocaleString("en-IN")}</span>
                   </div>
-                  <div className="flex justify-between text-xs text-indigo-300 font-medium">
+                  <div className="flex justify-between text-xs text-[#1656a6] font-semibold">
                     <span>Total GST (18%):</span>
                     <span>₹{gstAmount.toLocaleString("en-IN")}</span>
                   </div>
                 </>
               )}
 
-              <div className="flex justify-between border-t border-slate-800 pt-3 text-sm font-bold text-white">
+              <div className="flex justify-between border-t border-slate-200 pt-3 text-sm font-bold text-slate-900">
                 <span>Total Fee Payable:</span>
-                <span className="text-indigo-400">₹{totalPayable.toLocaleString("en-IN")}</span>
+                <span className="text-[#1656a6]">₹{totalPayable.toLocaleString("en-IN")}</span>
               </div>
             </div>
 
             {/* Plan Breakdown */}
-            <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/60 space-y-2 text-xs">
-              <div className="flex justify-between text-emerald-400 font-semibold">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+              <div className="flex justify-between text-emerald-600 font-bold">
                 <span>Today's Payment:</span>
                 <span>₹{initialPayment.toLocaleString("en-IN")}</span>
               </div>
 
               {planType === "EMI" && (
                 <>
-                  <div className="flex justify-between text-amber-400">
+                  <div className="flex justify-between text-amber-600 font-semibold">
                     <span>Remaining Balance:</span>
                     <span>₹{remainingBalance.toLocaleString("en-IN")}</span>
                   </div>
-                  <div className="pt-2 border-t border-slate-700 text-[11px] text-slate-300 flex justify-between">
+                  <div className="pt-2 border-t border-slate-200 text-[11px] text-slate-600 flex justify-between">
                     <span>Monthly EMI:</span>
-                    <span className="font-bold text-white">
+                    <span className="font-bold text-slate-900">
                       {emiMonths} x ₹{monthlyEmi.toLocaleString("en-IN")}
                     </span>
                   </div>
@@ -530,7 +530,7 @@ export const NewAdmissionPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs sm:text-sm shadow-xl shadow-indigo-600/30 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#1656a6] to-[#124587] hover:from-[#1b61bd] hover:to-[#1656a6] text-[#F7F0E8] font-bold text-xs sm:text-sm shadow-md transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>{loading ? "Processing Admission..." : "Confirm & Generate Receipt"}</span>
@@ -542,3 +542,4 @@ export const NewAdmissionPage: React.FC = () => {
     </div>
   );
 };
+export default NewAdmissionPage;
