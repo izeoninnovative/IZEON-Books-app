@@ -149,7 +149,7 @@ export const NewAdmissionPage: React.FC = () => {
         {/* Left Column: Form Details (2 Cols on desktop) */}
         <div className="lg:col-span-2 space-y-6">
           {/* 1. Student Personal Information */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <UserPlus className="w-4 h-4 text-[#1656a6]" />
               <span>1. Student Profile</span>
@@ -227,7 +227,7 @@ export const NewAdmissionPage: React.FC = () => {
           </div>
 
           {/* 2. Course & Fee Configuration */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-[#1656a6]" />
               <span>2. Course & Fee Setup</span>
@@ -308,18 +308,18 @@ export const NewAdmissionPage: React.FC = () => {
           </div>
 
           {/* 3. Payment Plan: Lumpsum vs EMI */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-[#1656a6]" />
               <span>3. Payment Schedule Plan</span>
             </h3>
 
-            <div className="flex gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label
-                className={`flex-1 p-3.5 rounded-xl border flex items-center gap-3 cursor-pointer transition ${
+                className={`p-3.5 rounded-xl border flex items-center gap-3 cursor-pointer transition ${
                   planType === "LUMPSUM"
                     ? "bg-blue-50/70 border-[#1656a6] text-slate-900 shadow-xs"
-                    : "bg-slate-50/60 border-slate-200 text-slate-600"
+                    : "bg-slate-50/60 border-slate-200 text-slate-600 hover:border-slate-300"
                 }`}
               >
                 <input
@@ -329,20 +329,20 @@ export const NewAdmissionPage: React.FC = () => {
                   onChange={() => setPlanType("LUMPSUM")}
                   className="hidden"
                 />
-                <div className="p-2 rounded-lg bg-blue-100 text-[#1656a6]">
+                <div className="p-2 rounded-lg bg-blue-100 text-[#1656a6] shrink-0">
                   <Receipt className="w-4 h-4" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs font-bold text-slate-900">Lumpsum (One-Time)</p>
                   <p className="text-[11px] text-slate-500">Pay full tuition upfront</p>
                 </div>
               </label>
 
               <label
-                className={`flex-1 p-3.5 rounded-xl border flex items-center gap-3 cursor-pointer transition ${
+                className={`p-3.5 rounded-xl border flex items-center gap-3 cursor-pointer transition ${
                   planType === "EMI"
                     ? "bg-purple-50/70 border-purple-500 text-slate-900 shadow-xs"
-                    : "bg-slate-50/60 border-slate-200 text-slate-600"
+                    : "bg-slate-50/60 border-slate-200 text-slate-600 hover:border-slate-300"
                 }`}
               >
                 <input
@@ -352,12 +352,12 @@ export const NewAdmissionPage: React.FC = () => {
                   onChange={() => setPlanType("EMI")}
                   className="hidden"
                 />
-                <div className="p-2 rounded-lg bg-purple-100 text-purple-700">
+                <div className="p-2 rounded-lg bg-purple-100 text-purple-700 shrink-0">
                   <Calendar className="w-4 h-4" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs font-bold text-slate-900">Monthly EMI Plan</p>
-                  <p className="text-[11px] text-slate-500">Downpayment + monthly installments</p>
+                  <p className="text-[11px] text-slate-500">Downpayment + installments</p>
                 </div>
               </label>
             </div>
@@ -413,7 +413,7 @@ export const NewAdmissionPage: React.FC = () => {
           </div>
 
           {/* 4. Payment Mode */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <IndianRupee className="w-4 h-4 text-[#1656a6]" />
               <span>4. Initial Payment Details</span>
@@ -455,7 +455,7 @@ export const NewAdmissionPage: React.FC = () => {
 
         {/* Right Column: Live Bill Breakdown */}
         <div className="space-y-6">
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-md sticky top-20 space-y-5">
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-md sticky top-20 space-y-5">
             <div className="flex items-center justify-between pb-4 border-b border-slate-200">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Receipt className="w-4 h-4 text-[#1656a6]" />

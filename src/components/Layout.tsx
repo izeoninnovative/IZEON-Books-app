@@ -27,7 +27,7 @@ export const Layout: React.FC = () => {
       {/* Content wrapper: Header is fixed, only main content area scrolls */}
       <div className="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(true)} title={getPageTitle(location.pathname)} />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-8">
           <div className="max-w-7xl w-full mx-auto">
             <Outlet />
           </div>
