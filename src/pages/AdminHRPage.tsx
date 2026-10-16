@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCw,
+  Edit3,
 } from "lucide-react";
 import api from "../api/client";
 
@@ -18,7 +19,7 @@ export const AdminHRPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
-  // Form state
+  // Form state for creating HR
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -27,6 +28,18 @@ export const AdminHRPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Edit HR state
+  const [editingHR, setEditingHR] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+    role: "HR" as "HR" | "ADMIN",
+  });
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editErrorMsg, setEditErrorMsg] = useState<string | null>(null);
+  const [editSuccessMsg, setEditSuccessMsg] = useState<string | null>(null);
 
   const fetchHRUsers = async () => {
     try {
@@ -63,6 +76,48 @@ export const AdminHRPage: React.FC = () => {
       setErrorMsg(err.response?.data?.message || "Failed to create HR account");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const openEditModal = (hr: any) => {
+    setEditingHR(hr);
+    setEditForm({
+      username: hr.username,
+      email: hr.email,
+      password: "",
+      role: hr.role || "HR",
+    });
+    setEditErrorMsg(null);
+    setEditSuccessMsg(null);
+  };
+
+  const handleUpdateHR = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingHR) return;
+    setEditErrorMsg(null);
+    setEditSuccessMsg(null);
+
+    try {
+      setEditSubmitting(true);
+      const payload: any = {
+        username: editForm.username,
+        email: editForm.email,
+        role: editForm.role,
+      };
+      if (editForm.password.trim()) {
+        payload.password = editForm.password.trim();
+      }
+      const res = await api.put(`/admin/hr-users/${editingHR.id}`, payload);
+      setEditSuccessMsg(`HR staff account "${res.data.data.username}" updated successfully!`);
+      fetchHRUsers();
+      setTimeout(() => {
+        setEditingHR(null);
+        setEditSuccessMsg(null);
+      }, 1500);
+    } catch (err: any) {
+      setEditErrorMsg(err.response?.data?.message || "Failed to update HR account");
+    } finally {
+      setEditSubmitting(false);
     }
   };
 
@@ -108,9 +163,32 @@ export const AdminHRPage: React.FC = () => {
           <span className="font-bold block text-slate-900 mb-0.5">
             Administrative Access Control Policy
           </span>
-          Only Admins possess credentials to create or assign HR accounts. HR personnel have
+          Only Admins possess credentials to create or update HR accounts. HR personnel have
           permission to enroll students, generate GST/Non-GST invoices, and collect EMI payments,
-          while financial reports and salary records remain strictly Admin-only.
+          while financial reports, salaries, and user management remain strictly Admin-only.
+        </div>
+      </div>
+
+      {/* HR Users Summary Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
+          <span className="text-xs font-semibold text-slate-500">Total Assigned HRs</span>
+          <p className="text-2xl font-bold text-slate-900 mt-1">{hrUsers.length}</p>
+          <span className="text-[11px] text-slate-400">Authorized staff accounts</span>
+        </div>
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
+          <span className="text-xs font-semibold text-slate-500">Total HR Revenue Collected</span>
+          <p className="text-2xl font-bold text-emerald-600 mt-1">
+            ₹{hrUsers.reduce((sum, h) => sum + (h.totalRevenueGenerated || 0), 0).toLocaleString("en-IN")}
+          </p>
+          <span className="text-[11px] text-slate-400">Generated across all HR staff</span>
+        </div>
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
+          <span className="text-xs font-semibold text-slate-500">Total HR Invoices</span>
+          <p className="text-2xl font-bold text-[#1656a6] mt-1">
+            {hrUsers.reduce((sum, h) => sum + (h.invoiceCount || 0), 0)}
+          </p>
+          <span className="text-[11px] text-slate-400">Admissions & EMI receipts</span>
         </div>
       </div>
 
@@ -132,9 +210,10 @@ export const AdminHRPage: React.FC = () => {
                 <tr>
                   <th className="px-6 py-3.5">User</th>
                   <th className="px-6 py-3.5">Email</th>
-                  <th className="px-6 py-3.5">Role Badge</th>
+                  <th className="px-6 py-3.5">Role</th>
                   <th className="px-6 py-3.5">Assigned On</th>
-                  <th className="px-6 py-3.5 text-right">Status</th>
+                  <th className="px-6 py-3.5">Revenue Collected</th>
+                  <th className="px-6 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -168,10 +247,30 @@ export const AdminHRPage: React.FC = () => {
                         <span>{new Date(hr.createdAt).toLocaleDateString("en-IN")}</span>
                       </div>
                     </td>
+                    <td className="px-6 py-4">
+                      <div>
+                        <span className="font-extrabold text-emerald-600 block text-sm">
+                          ₹{(hr.totalRevenueGenerated || 0).toLocaleString("en-IN")}
+                        </span>
+                        <span className="text-[11px] text-slate-400">
+                          {hr.invoiceCount || 0} invoices
+                        </span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-right">
-                      <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-bold">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Active
-                      </span>
+                      <div className="flex items-center justify-end gap-3">
+                        <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-bold">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Active
+                        </span>
+                        <button
+                          onClick={() => openEditModal(hr)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-[#1656a6] text-slate-700 hover:text-[#F7F0E8] text-xs font-semibold transition cursor-pointer"
+                          title="Edit Staff Member"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Edit</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -286,7 +385,128 @@ export const AdminHRPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Edit HR Modal (Only Admin) */}
+      {editingHR && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl bg-white border border-slate-200 shadow-2xl p-6 relative text-slate-900">
+            <button
+              onClick={() => setEditingHR(null)}
+              className="absolute right-4 top-4 text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1 rounded-lg cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-lg font-bold text-slate-900 tracking-tight">
+              Edit HR Staff Account
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">
+              Update credentials and role access for staff ID #{editingHR.id}
+            </p>
+
+            {editErrorMsg && (
+              <div className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{editErrorMsg}</span>
+              </div>
+            )}
+
+            {editSuccessMsg && (
+              <div className="mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>{editSuccessMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateHR} className="space-y-4 mt-5">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Full Name / Username
+                </label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    value={editForm.username}
+                    onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Work Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    required
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Reset Password (Optional)
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    minLength={6}
+                    placeholder="Leave blank to keep current password"
+                    value={editForm.password}
+                    onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                  />
+                </div>
+                <span className="text-[11px] text-slate-400 mt-1 block">
+                  Only enter a new password if you wish to change it (min. 6 characters).
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Role Permission
+                </label>
+                <select
+                  value={editForm.role}
+                  onChange={(e) => setEditForm({ ...editForm, role: e.target.value as "HR" | "ADMIN" })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                >
+                  <option value="HR">HR Staff (Enrollment & Receipt Collection)</option>
+                  <option value="ADMIN">ADMIN (Full System Privileges)</option>
+                </select>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingHR(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSubmitting}
+                  className="px-5 py-2.5 rounded-xl bg-[#1656a6] hover:bg-[#124587] text-[#F7F0E8] text-xs font-bold shadow-xs transition cursor-pointer"
+                >
+                  {editSubmitting ? "Saving Changes..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 export default AdminHRPage;
+

@@ -10,14 +10,34 @@ import {
   Clock,
   IndianRupee,
   RefreshCw,
+  Edit3,
+  X,
+  AlertCircle,
 } from "lucide-react";
 import api, { invalidateApiCache } from "../api/client";
+import { useAuth } from "../context/AuthContext";
 
 export const StudentsPage: React.FC = () => {
+  const { isAdmin } = useAuth();
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [planFilter, setPlanFilter] = useState<"ALL" | "LUMPSUM" | "EMI">("ALL");
+
+  // Admin Quick-Edit Student Modal State
+  const [editingStudent, setEditingStudent] = useState<any | null>(null);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    dob: "",
+    address: "",
+    courseId: 0,
+    status: "ACTIVE" as "ACTIVE" | "COMPLETED" | "DROPPED",
+  });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   const fetchStudents = async (forceRefresh = false) => {
     try {
@@ -37,6 +57,60 @@ export const StudentsPage: React.FC = () => {
   useEffect(() => {
     fetchStudents();
   }, []);
+
+  const openEditModal = async (student: any) => {
+    let formattedDob = student.dob || "";
+    if (formattedDob.includes("T")) {
+      formattedDob = formattedDob.split("T")[0];
+    }
+    setEditingStudent(student);
+    setEditForm({
+      name: student.name || "",
+      email: student.email || "",
+      phone: student.phone || "",
+      dob: formattedDob,
+      address: student.address || "",
+      courseId: student.courseId,
+      status: student.status || "ACTIVE",
+    });
+    setEditError(null);
+
+    if (courses.length === 0) {
+      try {
+        const res = await api.get("/courses");
+        setCourses(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to fetch courses:", err);
+      }
+    }
+  };
+
+  const handleUpdateStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingStudent) return;
+
+    try {
+      setEditLoading(true);
+      setEditError(null);
+      await api.put(`/students/${editingStudent.id}`, {
+        name: editForm.name,
+        email: editForm.email,
+        phone: editForm.phone,
+        dob: editForm.dob,
+        address: editForm.address,
+        courseId: Number(editForm.courseId),
+        status: editForm.status,
+      });
+
+      setEditingStudent(null);
+      fetchStudents(true);
+    } catch (err: any) {
+      setEditError(err.response?.data?.message || "Failed to update student details");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
 
   // Memoize search/filter operations to avoid lag on re-renders
   const filteredStudents = useMemo(() => {
@@ -260,13 +334,25 @@ export const StudentsPage: React.FC = () => {
                         )}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Link
-                          to={`/students/${student.id}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-[#1656a6] text-slate-700 hover:text-[#F7F0E8] text-xs font-semibold transition"
-                        >
-                          <span>Ledger</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
+                        <div className="flex items-center justify-end gap-2">
+                          {isAdmin && (
+                            <button
+                              onClick={() => openEditModal(student)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-[#1656a6] text-slate-700 hover:text-[#F7F0E8] text-xs font-semibold transition cursor-pointer"
+                              title="Edit Student Information (Admin Only)"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>Edit</span>
+                            </button>
+                          )}
+                          <Link
+                            to={`/students/${student.id}`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-[#1656a6] text-slate-700 hover:text-[#F7F0E8] text-xs font-semibold transition"
+                          >
+                            <span>Ledger</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -276,7 +362,168 @@ export const StudentsPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Student Modal (Admin Only) */}
+      {editingStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs overflow-y-auto">
+          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-2xl p-6 relative text-slate-900 my-8">
+            <button
+              onClick={() => setEditingStudent(null)}
+              className="absolute right-4 top-4 text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1 rounded-lg cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight">
+                Edit Student Information
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-[#1656a6] border border-blue-200">
+                Admin Exclusive
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Modify personal records, enrollment status, or enrolled course
+            </p>
+
+            {editError && (
+              <div className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{editError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateStudent} className="space-y-4 mt-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Student Full Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Contact Phone
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Date of Birth
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={editForm.dob}
+                    onChange={(e) => setEditForm({ ...editForm, dob: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Enrolled Course
+                  </label>
+                  <select
+                    value={editForm.courseId}
+                    onChange={(e) => setEditForm({ ...editForm, courseId: Number(e.target.value) })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                  >
+                    {courses.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.title} ({c.code})
+                      </option>
+                    ))}
+                    {courses.length === 0 && (
+                      <option value={editingStudent.courseId}>{editingStudent.courseTitle || "Current Course"}</option>
+                    )}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Enrollment Status
+                  </label>
+                  <select
+                    value={editForm.status}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, status: e.target.value as "ACTIVE" | "COMPLETED" | "DROPPED" })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                  >
+                    <option value="ACTIVE">ACTIVE (In Progress)</option>
+                    <option value="COMPLETED">COMPLETED (Graduated)</option>
+                    <option value="DROPPED">DROPPED (Discontinued)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Residential Address
+                </label>
+                <textarea
+                  rows={2}
+                  value={editForm.address}
+                  onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                  placeholder="Street address, city, state, postal code"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                />
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingStudent(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  className="px-5 py-2.5 rounded-xl bg-[#1656a6] hover:bg-[#124587] text-[#F7F0E8] text-xs font-bold shadow-xs transition cursor-pointer"
+                >
+                  {editLoading ? "Updating..." : "Save Student Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 export default StudentsPage;
+

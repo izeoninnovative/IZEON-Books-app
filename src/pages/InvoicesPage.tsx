@@ -1,3 +1,5 @@
+/** @format */
+
 import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -10,22 +12,37 @@ import {
   IndianRupee,
   RefreshCw,
   Building2,
+  Mail,
 } from "lucide-react";
 import api, { invalidateApiCache } from "../api/client";
+import { useAuth } from "../context/AuthContext";
 import logoImg from "../assets/interview logo.png";
 
 export const InvoicesPage: React.FC = () => {
+  const { user, isAdmin } = useAuth();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState<"ALL" | "GST" | "NON_GST">("ALL");
+  const [typeFilter, setTypeFilter] = useState<"ALL" | "GST" | "NON_GST">(
+    "ALL",
+  );
 
   // Selected Invoice for Full Receipt Modal
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [company, setCompany] = useState<any>(null);
+  const [emailingInvoiceId, setEmailingInvoiceId] = useState<number | null>(
+    null,
+  );
+  const [emailMessage, setEmailMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
-    api.get("/company").then((res) => setCompany(res.data.data)).catch(console.error);
+    api
+      .get("/company")
+      .then((res) => setCompany(res.data.data))
+      .catch(console.error);
   }, []);
 
   const fetchInvoices = async (forceRefresh = false) => {
@@ -34,7 +51,9 @@ export const InvoicesPage: React.FC = () => {
       if (forceRefresh) {
         invalidateApiCache("/payments/invoices");
       }
-      const res = await api.get("/payments/invoices", { bypassCache: forceRefresh } as any);
+      const res = await api.get("/payments/invoices", {
+        bypassCache: forceRefresh,
+      } as any);
       setInvoices(res.data.data || []);
     } catch (err) {
       console.error("Failed to fetch invoices:", err);
@@ -46,6 +65,45 @@ export const InvoicesPage: React.FC = () => {
   useEffect(() => {
     fetchInvoices();
   }, []);
+
+  const handleEmailInvoice = async (invoice: any) => {
+    if (!invoice.studentEmail || invoice.studentEmail === "N/A") {
+      setEmailMessage({
+        type: "error",
+        text: "This invoice has no student email address.",
+      });
+      return;
+    }
+    if (
+      !window.confirm(
+        `Send invoice ${invoice.invoiceNo} as a PDF to ${invoice.studentEmail}?`,
+      )
+    ) {
+      return;
+    }
+
+    setEmailingInvoiceId(invoice.id);
+    setEmailMessage(null);
+    try {
+      const response = await api.post(`/payments/invoices/${invoice.id}/email`);
+      setEmailMessage({
+        type: "success",
+        text:
+          response.data.message ||
+          `Invoice PDF sent to ${invoice.studentEmail}`,
+      });
+    } catch (err: any) {
+      console.error(`Failed to email invoice ${invoice.invoiceNo}:`, err);
+      setEmailMessage({
+        type: "error",
+        text:
+          err.response?.data?.message ||
+          `Failed to send invoice PDF to ${invoice.studentEmail}. Please try again.`,
+      });
+    } finally {
+      setEmailingInvoiceId(null);
+    }
+  };
 
   const filteredInvoices = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -63,16 +121,32 @@ export const InvoicesPage: React.FC = () => {
     });
   }, [invoices, searchTerm, typeFilter]);
 
-  const { totalCollected, totalGst } = useMemo(() => {
-    let collected = 0;
-    let gst = 0;
-    for (let i = 0; i < invoices.length; i++) {
-      const inv = invoices[i];
-      if (inv.amountPaid) collected += inv.amountPaid;
-      gst += (inv.cgstAmount || 0) + (inv.sgstAmount || 0);
-    }
-    return { totalCollected: collected, totalGst: gst };
-  }, [invoices]);
+  const { totalCollected, totalGst, myCollected, myGst, myInvoicesCount } =
+    useMemo(() => {
+      let collected = 0;
+      let gst = 0;
+      let myColl = 0;
+      let myGstVal = 0;
+      let myCount = 0;
+      for (let i = 0; i < invoices.length; i++) {
+        const inv = invoices[i];
+        if (inv.amountPaid) collected += inv.amountPaid;
+        gst += (inv.cgstAmount || 0) + (inv.sgstAmount || 0);
+
+        if (inv.createdById === user?.id) {
+          myCount++;
+          if (inv.amountPaid) myColl += inv.amountPaid;
+          myGstVal += (inv.cgstAmount || 0) + (inv.sgstAmount || 0);
+        }
+      }
+      return {
+        totalCollected: collected,
+        totalGst: gst,
+        myCollected: myColl,
+        myGst: myGstVal,
+        myInvoicesCount: myCount,
+      };
+    }, [invoices, user]);
 
   return (
     <div className="space-y-6">
@@ -83,7 +157,8 @@ export const InvoicesPage: React.FC = () => {
             Invoices & Receipts
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Complete audit trail of student fee receipts, GST compliance, and payment records
+            Complete audit trail of student fee receipts, GST compliance, and
+            payment records
           </p>
         </div>
         <button
@@ -99,39 +174,57 @@ export const InvoicesPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Total Invoices</span>
+            <span className="text-xs font-semibold text-slate-500">
+              {isAdmin ? "Total Invoices" : "My Invoices"}
+            </span>
             <div className="p-2 rounded-xl bg-blue-50 text-[#1656a6]">
               <Receipt className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-slate-900 mt-2">{invoices.length}</p>
-          <p className="text-xs text-slate-400 mt-1">Issued for course enrollments & EMIs</p>
+          <p className="text-2xl font-bold text-slate-900 mt-2">
+            {isAdmin ? invoices.length : myInvoicesCount}
+          </p>
+          <p className="text-xs text-slate-400 mt-1">
+            {isAdmin
+              ? "Issued for course enrollments & EMIs"
+              : "Generated by your account"}
+          </p>
         </div>
 
         <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Gross Fee Inflow</span>
+            <span className="text-xs font-semibold text-slate-500">
+              {isAdmin ? "Gross Fee Inflow" : "My Fee Collections"}
+            </span>
             <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600">
               <IndianRupee className="w-4 h-4" />
             </div>
           </div>
           <p className="text-2xl font-bold text-emerald-600 mt-2">
-            ₹{totalCollected.toLocaleString()}
+            ₹{(isAdmin ? totalCollected : myCollected).toLocaleString()}
           </p>
-          <p className="text-xs text-slate-400 mt-1">Total revenue collected</p>
+          <p className="text-xs text-slate-400 mt-1">
+            {isAdmin
+              ? "Total revenue collected"
+              : "Total revenue collected by you"}
+          </p>
         </div>
 
         <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">GST Collected (18%)</span>
+            <span className="text-xs font-semibold text-slate-500">
+              {isAdmin ? "GST Collected (18%)" : "GST in My Collections"}
+            </span>
             <div className="p-2 rounded-xl bg-blue-50 text-[#1656a6]">
               <Building2 className="w-4 h-4" />
             </div>
           </div>
           <p className="text-2xl font-bold text-[#1656a6] mt-2">
-            ₹{Math.round(totalGst).toLocaleString()}
+            ₹{Math.round(isAdmin ? totalGst : myGst).toLocaleString()}
           </p>
-          <p className="text-xs text-slate-400 mt-1">Split equally into CGST & SGST (9% each)</p>
+          <p className="text-xs text-slate-400 mt-1">
+            Split equally into CGST & SGST (9% each)
+          </p>
         </div>
       </div>
 
@@ -168,6 +261,19 @@ export const InvoicesPage: React.FC = () => {
         </div>
       </div>
 
+      {emailMessage && (
+        <div
+          role={emailMessage.type === "error" ? "alert" : "status"}
+          className={`rounded-xl border px-4 py-3 text-sm ${
+            emailMessage.type === "success"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-rose-200 bg-rose-50 text-rose-700"
+          }`}
+        >
+          {emailMessage.text}
+        </div>
+      )}
+
       {/* Invoices Table */}
       <div className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-2xs">
         {loading ? (
@@ -189,13 +295,17 @@ export const InvoicesPage: React.FC = () => {
                   <th className="px-6 py-3.5">Date</th>
                   <th className="px-6 py-3.5">Type</th>
                   <th className="px-6 py-3.5">Method</th>
+                  <th className="px-6 py-3.5">Collected By</th>
                   <th className="px-6 py-3.5 text-right">Amount</th>
                   <th className="px-6 py-3.5 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredInvoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-slate-50/70 transition-colors">
+                  <tr
+                    key={inv.id}
+                    className="hover:bg-slate-50/70 transition-colors"
+                  >
                     <td className="px-6 py-4 font-mono font-bold text-[#1656a6] text-xs">
                       {inv.invoiceNo}
                     </td>
@@ -206,7 +316,9 @@ export const InvoicesPage: React.FC = () => {
                       >
                         {inv.studentName}
                       </Link>
-                      <div className="text-xs text-slate-400">{inv.studentEmail}</div>
+                      <div className="text-xs text-slate-400">
+                        {inv.studentEmail}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-xs text-slate-600">
                       {new Date(inv.issuedAt).toLocaleDateString("en-IN", {
@@ -227,10 +339,35 @@ export const InvoicesPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-xs text-slate-600">
-                      <span className="font-semibold text-slate-800">{inv.paymentMethod}</span>
+                      <span className="font-semibold text-slate-800">
+                        {inv.paymentMethod}
+                      </span>
                       {inv.transactionRef && (
                         <span className="block text-[10px] text-slate-400 font-mono truncate max-w-[120px]">
                           {inv.transactionRef}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-xs">
+                      {inv.createdByName &&
+                      inv.createdByName.toLowerCase() !== "admin" ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-slate-800">
+                            {inv.createdByName}
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                              inv.createdByRole === "HR"
+                                ? "bg-purple-50 text-purple-700 border border-purple-200"
+                                : "bg-blue-50 text-[#1656a6] border border-blue-200"
+                            }`}
+                          >
+                            {inv.createdByRole || "ADMIN"}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-[#1656a6] border border-blue-200">
+                          Admin
                         </span>
                       )}
                     </td>
@@ -238,6 +375,23 @@ export const InvoicesPage: React.FC = () => {
                       ₹{Number(inv.amountPaid).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => handleEmailInvoice(inv)}
+                        disabled={
+                          !inv.studentEmail ||
+                          inv.studentEmail === "N/A" ||
+                          emailingInvoiceId !== null
+                        }
+                        title={`Email PDF to ${inv.studentEmail || "student"}`}
+                        aria-label={`Email invoice ${inv.invoiceNo} to ${inv.studentEmail || "student"}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-[#1656a6] disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 hover:text-[#F7F0E8] text-xs font-semibold transition cursor-pointer"
+                      >
+                        {emailingInvoiceId === inv.id ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Mail className="w-3.5 h-3.5" />
+                        )}
+                      </button>
                       <button
                         onClick={() => setSelectedInvoice(inv)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-[#1656a6] text-slate-700 hover:text-[#F7F0E8] text-xs font-semibold transition cursor-pointer"
@@ -284,17 +438,24 @@ export const InvoicesPage: React.FC = () => {
               <div className="flex justify-between items-start gap-4">
                 <div className="flex items-start gap-3.5">
                   <div className="w-12 h-12 rounded-xl bg-white p-1 ring-1 ring-slate-200 shadow-xs flex items-center justify-center shrink-0">
-                    <img src={logoImg} alt="IZEON" className="w-full h-full object-contain" />
+                    <img
+                      src={logoImg}
+                      alt="IZEON"
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <div>
                     <h2 className="text-xl font-black tracking-tight text-slate-900 uppercase">
                       {company?.companyName || "IZEON INNOVATIVE"}
                     </h2>
                     <p className="text-xs text-slate-500">
-                      {company?.tagline || "Academy of Computer Software Training"}
+                      {company?.tagline ||
+                        "Academy of Computer Software Training"}
                     </p>
                     <p className="text-xs text-slate-500">
-                      {[company?.address, company?.city, company?.state].filter(Boolean).join(", ") || "Tamil Nadu, India"}
+                      {[company?.address, company?.city, company?.state]
+                        .filter(Boolean)
+                        .join(", ") || "Tamil Nadu, India"}
                     </p>
                     {selectedInvoice.invoiceType === "GST" && (
                       <p className="text-xs text-[#1656a6] font-mono mt-1 font-bold">
@@ -308,10 +469,15 @@ export const InvoicesPage: React.FC = () => {
                     {selectedInvoice.invoiceNo}
                   </span>
                   <span className="text-xs text-slate-500 block mt-0.5">
-                    Date: {new Date(selectedInvoice.issuedAt).toLocaleDateString("en-IN")}
+                    Date:{" "}
+                    {new Date(selectedInvoice.issuedAt).toLocaleDateString(
+                      "en-IN",
+                    )}
                   </span>
                   <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-50 text-[#1656a6] border border-blue-200 inline-block mt-1">
-                    {selectedInvoice.invoiceType === "GST" ? "TAX INVOICE" : "PAYMENT RECEIPT"}
+                    {selectedInvoice.invoiceType === "GST"
+                      ? "TAX INVOICE"
+                      : "PAYMENT RECEIPT"}
                   </span>
                 </div>
               </div>
@@ -321,7 +487,9 @@ export const InvoicesPage: React.FC = () => {
                 <span className="text-slate-500 font-semibold uppercase block mb-1">
                   Billed To
                 </span>
-                <p className="font-bold text-slate-900 text-sm">{selectedInvoice.studentName}</p>
+                <p className="font-bold text-slate-900 text-sm">
+                  {selectedInvoice.studentName}
+                </p>
                 <p className="text-slate-500">{selectedInvoice.studentEmail}</p>
               </div>
 
@@ -344,22 +512,32 @@ export const InvoicesPage: React.FC = () => {
                   <tbody className="divide-y divide-slate-100 bg-white">
                     <tr>
                       <td className="px-4 py-3">
-                        <span className="font-bold text-slate-900 block">Course Fee Payment</span>
+                        <span className="font-bold text-slate-900 block">
+                          Course Fee Payment
+                        </span>
                         <span className="text-slate-500 text-[11px]">
                           Payment Method: {selectedInvoice.paymentMethod}
-                          {selectedInvoice.transactionRef && ` (Ref: ${selectedInvoice.transactionRef})`}
+                          {selectedInvoice.transactionRef &&
+                            ` (Ref: ${selectedInvoice.transactionRef})`}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right text-slate-700">
-                        ₹{Number(selectedInvoice.taxableAmount).toLocaleString()}
+                        ₹
+                        {Number(selectedInvoice.taxableAmount).toLocaleString()}
                       </td>
                       {selectedInvoice.invoiceType === "GST" && (
                         <>
                           <td className="px-4 py-3 text-right text-slate-700">
-                            ₹{Number(selectedInvoice.cgstAmount).toLocaleString()}
+                            ₹
+                            {Number(
+                              selectedInvoice.cgstAmount,
+                            ).toLocaleString()}
                           </td>
                           <td className="px-4 py-3 text-right text-slate-700">
-                            ₹{Number(selectedInvoice.sgstAmount).toLocaleString()}
+                            ₹
+                            {Number(
+                              selectedInvoice.sgstAmount,
+                            ).toLocaleString()}
                           </td>
                         </>
                       )}
@@ -377,7 +555,9 @@ export const InvoicesPage: React.FC = () => {
                   Thank you for learning with IZEON Innovative.
                 </span>
                 <div className="text-right">
-                  <span className="text-slate-500 text-xs block">Amount Paid</span>
+                  <span className="text-slate-500 text-xs block">
+                    Amount Paid
+                  </span>
                   <span className="text-lg font-bold text-slate-900">
                     ₹{Number(selectedInvoice.totalAmount).toLocaleString()}
                   </span>
