@@ -1,3 +1,5 @@
+/** @format */
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -32,7 +34,10 @@ export const NewAdmissionPage: React.FC = () => {
   const [planType, setPlanType] = useState<"LUMPSUM" | "EMI">("LUMPSUM");
   const [invoiceType, setInvoiceType] = useState<"GST" | "NON_GST">("GST");
   const [baseFee, setBaseFee] = useState<number>(25000);
-  const [discountAmount, setDiscountAmount] = useState<number>(0);
+  const [discountMode, setDiscountMode] = useState<"RUPEES" | "PERCENTAGE">(
+    "RUPEES",
+  );
+  const [discountValue, setDiscountValue] = useState<number>(0);
 
   // EMI Options
   const [downPayment, setDownPayment] = useState<number>(5000);
@@ -71,6 +76,15 @@ export const NewAdmissionPage: React.FC = () => {
   };
 
   // Calculations
+  const discountLimit = Math.max(0, baseFee);
+  const normalizedDiscountValue = Math.max(0, discountValue);
+  const discountAmount =
+    discountMode === "PERCENTAGE"
+      ? Math.round(
+          ((discountLimit * Math.min(normalizedDiscountValue, 100)) / 100) *
+            100,
+        ) / 100
+      : Math.min(normalizedDiscountValue, discountLimit);
   const taxableAmount = Math.max(0, baseFee - discountAmount);
   const isGst = invoiceType === "GST";
   const gstAmount = isGst ? Math.round(taxableAmount * 0.18 * 100) / 100 : 0;
@@ -78,7 +92,8 @@ export const NewAdmissionPage: React.FC = () => {
   const sgst = isGst ? Math.round((gstAmount / 2) * 100) / 100 : 0;
   const totalPayable = taxableAmount + gstAmount;
 
-  const initialPayment = planType === "LUMPSUM" ? totalPayable : Number(downPayment || 0);
+  const initialPayment =
+    planType === "LUMPSUM" ? totalPayable : Number(downPayment || 0);
   const remainingBalance = Math.max(0, totalPayable - initialPayment);
   const monthlyEmi =
     planType === "EMI" && emiMonths > 0
@@ -113,12 +128,14 @@ export const NewAdmissionPage: React.FC = () => {
       if (res.data.success) {
         success(
           `Student "${payload.name}" enrolled successfully! Invoice receipt generated.`,
-          "Admission Confirmed"
+          "Admission Confirmed",
         );
         navigate(`/students/${res.data.data.student.id}`);
       }
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Failed to enroll student. Please check input.";
+      const msg =
+        err.response?.data?.message ||
+        "Failed to enroll student. Please check input.";
       setError(msg);
       notifyError(msg, "Admission Failed");
     } finally {
@@ -134,7 +151,8 @@ export const NewAdmissionPage: React.FC = () => {
           Student Admission & Fee Setup
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-          Enroll student, configure Lumpsum or EMI schedule, and generate GST invoice receipt.
+          Enroll student, configure Lumpsum or EMI schedule, and generate GST
+          invoice receipt.
         </p>
       </div>
 
@@ -145,7 +163,10 @@ export const NewAdmissionPage: React.FC = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+      >
         {/* Left Column: Form Details (2 Cols on desktop) */}
         <div className="lg:col-span-2 space-y-6">
           {/* 1. Student Personal Information */}
@@ -264,15 +285,38 @@ export const NewAdmissionPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Scholarship / Discount (₹)
+                <label
+                  htmlFor="discount-value"
+                  className="block text-xs font-semibold text-slate-700 mb-1"
+                >
+                  Scholarship / Discount (
+                  {discountMode === "RUPEES" ? "₹" : "%"})
                 </label>
-                <input
-                  type="number"
-                  value={discountAmount}
-                  onChange={(e) => setDiscountAmount(Number(e.target.value))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1656a6]"
-                />
+                <div className="flex gap-2">
+                  <select
+                    aria-label="Discount type"
+                    value={discountMode}
+                    onChange={(e) =>
+                      setDiscountMode(e.target.value as "RUPEES" | "PERCENTAGE")
+                    }
+                    className="w-2/5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                  >
+                    <option value="RUPEES">Rupees (₹)</option>
+                    <option value="PERCENTAGE">Percentage (%)</option>
+                  </select>
+                  <input
+                    id="discount-value"
+                    type="number"
+                    min={0}
+                    max={discountMode === "PERCENTAGE" ? 100 : discountLimit}
+                    step="any"
+                    value={discountValue}
+                    onChange={(e) =>
+                      setDiscountValue(Math.max(0, Number(e.target.value) || 0))
+                    }
+                    className="min-w-0 flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1656a6]"
+                  />
+                </div>
               </div>
 
               <div>
@@ -333,8 +377,12 @@ export const NewAdmissionPage: React.FC = () => {
                   <Receipt className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-900">Lumpsum (One-Time)</p>
-                  <p className="text-[11px] text-slate-500">Pay full tuition upfront</p>
+                  <p className="text-xs font-bold text-slate-900">
+                    Lumpsum (One-Time)
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    Pay full tuition upfront
+                  </p>
                 </div>
               </label>
 
@@ -356,8 +404,12 @@ export const NewAdmissionPage: React.FC = () => {
                   <Calendar className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-900">Monthly EMI Plan</p>
-                  <p className="text-[11px] text-slate-500">Downpayment + installments</p>
+                  <p className="text-xs font-bold text-slate-900">
+                    Monthly EMI Plan
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    Downpayment + installments
+                  </p>
                 </div>
               </label>
             </div>
@@ -469,7 +521,9 @@ export const NewAdmissionPage: React.FC = () => {
             <div className="space-y-2.5 text-xs text-slate-500">
               <div className="flex justify-between">
                 <span>Course Base Fee:</span>
-                <span className="text-slate-900 font-semibold">₹{baseFee.toLocaleString("en-IN")}</span>
+                <span className="text-slate-900 font-semibold">
+                  ₹{baseFee.toLocaleString("en-IN")}
+                </span>
               </div>
 
               {discountAmount > 0 && (
@@ -490,11 +544,15 @@ export const NewAdmissionPage: React.FC = () => {
                 <>
                   <div className="flex justify-between text-[11px]">
                     <span>CGST (9%):</span>
-                    <span className="text-slate-700">₹{cgst.toLocaleString("en-IN")}</span>
+                    <span className="text-slate-700">
+                      ₹{cgst.toLocaleString("en-IN")}
+                    </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
                     <span>SGST (9%):</span>
-                    <span className="text-slate-700">₹{sgst.toLocaleString("en-IN")}</span>
+                    <span className="text-slate-700">
+                      ₹{sgst.toLocaleString("en-IN")}
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs text-[#1656a6] font-semibold">
                     <span>Total GST (18%):</span>
@@ -505,7 +563,9 @@ export const NewAdmissionPage: React.FC = () => {
 
               <div className="flex justify-between border-t border-slate-200 pt-3 text-sm font-bold text-slate-900">
                 <span>Total Fee Payable:</span>
-                <span className="text-[#1656a6]">₹{totalPayable.toLocaleString("en-IN")}</span>
+                <span className="text-[#1656a6]">
+                  ₹{totalPayable.toLocaleString("en-IN")}
+                </span>
               </div>
             </div>
 
@@ -541,7 +601,11 @@ export const NewAdmissionPage: React.FC = () => {
               className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#1656a6] to-[#124587] hover:from-[#1b61bd] hover:to-[#1656a6] text-[#F7F0E8] font-bold text-xs sm:text-sm shadow-md transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>{loading ? "Processing Admission..." : "Confirm & Generate Receipt"}</span>
+              <span>
+                {loading
+                  ? "Processing Admission..."
+                  : "Confirm & Generate Receipt"}
+              </span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
