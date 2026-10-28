@@ -519,8 +519,8 @@ export const AdminHRPage: React.FC = () => {
 
         // If inTime changed, automatically recalculate late status against THIS employee's assigned shift
         if (field === "inTime") {
-          // If status is PERMISSION, do not auto-overwrite with LATE
-          if (row.status === "PERMISSION") {
+          // If status is PERMISSION or OD, do not auto-overwrite with LATE
+          if (row.status === "PERMISSION" || row.status === "OD") {
             return updated;
           }
           const lateInfo = checkLateStatus(
@@ -1393,45 +1393,54 @@ export const AdminHRPage: React.FC = () => {
 
                         {/* In-Time input */}
                         <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-1.5">
-                            <input
-                              type="text"
-                              placeholder={row.shiftInTime || "09:30"}
-                              value={row.inTime || ""}
-                              onChange={(e) =>
-                                handleAttendanceChange(
-                                  row.employeeId,
-                                  "inTime",
-                                  e.target.value,
-                                )
-                              }
-                              className={`w-28 px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold focus:outline-none ${
-                                row.isLate
-                                  ? "bg-rose-50 border-rose-300 text-rose-800"
-                                  : "bg-white border-slate-200 text-slate-900"
-                              }`}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const now = new Date();
-                                const timeStr = now.toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                });
-                                handleAttendanceChange(
-                                  row.employeeId,
-                                  "inTime",
-                                  timeStr,
-                                );
-                              }}
-                              className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[10px] font-bold text-slate-600 cursor-pointer"
-                              title="Set current time"
-                            >
-                              Now
-                            </button>
-                          </div>
-                          {row.punchDistanceMeters !== undefined &&
+                          {row.status === "OD" ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-bold text-xs">
+                                <span>OD (No Timing Required)</span>
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="text"
+                                placeholder={row.shiftInTime || "09:30"}
+                                value={row.inTime || ""}
+                                onChange={(e) =>
+                                  handleAttendanceChange(
+                                    row.employeeId,
+                                    "inTime",
+                                    e.target.value,
+                                  )
+                                }
+                                className={`w-28 px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold focus:outline-none ${
+                                  row.isLate
+                                    ? "bg-rose-50 border-rose-300 text-rose-800"
+                                    : "bg-white border-slate-200 text-slate-900"
+                                }`}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const now = new Date();
+                                  const timeStr = now.toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  });
+                                  handleAttendanceChange(
+                                    row.employeeId,
+                                    "inTime",
+                                    timeStr,
+                                  );
+                                }}
+                                className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[10px] font-bold text-slate-600 cursor-pointer"
+                                title="Set current time"
+                              >
+                                Now
+                              </button>
+                            </div>
+                          )}
+                          {row.status !== "OD" &&
+                            row.punchDistanceMeters !== undefined &&
                             row.punchDistanceMeters !== null && (
                               <div className="flex items-center gap-1 text-[10px] text-emerald-700 font-semibold mt-1">
                                 <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
@@ -1444,40 +1453,46 @@ export const AdminHRPage: React.FC = () => {
 
                         {/* Out-Time input */}
                         <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-1.5">
-                            <input
-                              type="text"
-                              placeholder="06:30 PM"
-                              value={row.outTime || ""}
-                              onChange={(e) =>
-                                handleAttendanceChange(
-                                  row.employeeId,
-                                  "outTime",
-                                  e.target.value,
-                                )
-                              }
-                              className="w-28 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-mono text-slate-900 focus:outline-none focus:border-[#1656a6]"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const now = new Date();
-                                const timeStr = now.toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                });
-                                handleAttendanceChange(
-                                  row.employeeId,
-                                  "outTime",
-                                  timeStr,
-                                );
-                              }}
-                              className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[10px] font-bold text-slate-600 cursor-pointer"
-                              title="Set current time"
-                            >
-                              Now
-                            </button>
-                          </div>
+                          {row.status === "OD" ? (
+                            <span className="text-xs text-slate-400 font-medium italic">
+                              Exempt (On Duty)
+                            </span>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="text"
+                                placeholder="06:30 PM"
+                                value={row.outTime || ""}
+                                onChange={(e) =>
+                                  handleAttendanceChange(
+                                    row.employeeId,
+                                    "outTime",
+                                    e.target.value,
+                                  )
+                                }
+                                className="w-28 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-mono text-slate-900 focus:outline-none focus:border-[#1656a6]"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const now = new Date();
+                                  const timeStr = now.toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  });
+                                  handleAttendanceChange(
+                                    row.employeeId,
+                                    "outTime",
+                                    timeStr,
+                                  );
+                                }}
+                                className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[10px] font-bold text-slate-600 cursor-pointer"
+                                title="Set current time"
+                              >
+                                Now
+                              </button>
+                            </div>
+                          )}
                         </td>
 
                         {/* Status dropdown */}
@@ -1512,7 +1527,8 @@ export const AdminHRPage: React.FC = () => {
                                 );
                               } else if (
                                 s === "PRESENT" ||
-                                s === "PERMISSION"
+                                s === "PERMISSION" ||
+                                s === "OD"
                               ) {
                                 handleAttendanceChange(
                                   row.employeeId,
@@ -1527,19 +1543,22 @@ export const AdminHRPage: React.FC = () => {
                               }
                             }}
                             className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border focus:outline-none cursor-pointer ${
-                              row.status === "LATE" ||
-                              (row.isLate && row.status !== "PERMISSION")
-                                ? "bg-rose-50 text-rose-700 border-rose-300"
-                                : row.status === "PERMISSION"
-                                  ? "bg-purple-50 text-purple-700 border-purple-300"
-                                  : row.status === "ABSENT"
-                                    ? "bg-slate-100 text-slate-600 border-slate-300"
-                                    : row.status === "HALF_DAY"
-                                      ? "bg-amber-50 text-amber-700 border-amber-300"
-                                      : "bg-emerald-50 text-emerald-700 border-emerald-300"
+                              row.status === "OD"
+                                ? "bg-blue-50 text-blue-700 border-blue-300"
+                                : row.status === "LATE" ||
+                                (row.isLate && row.status !== "PERMISSION")
+                                  ? "bg-rose-50 text-rose-700 border-rose-300"
+                                  : row.status === "PERMISSION"
+                                    ? "bg-purple-50 text-purple-700 border-purple-300"
+                                    : row.status === "ABSENT"
+                                      ? "bg-slate-100 text-slate-600 border-slate-300"
+                                      : row.status === "HALF_DAY"
+                                        ? "bg-amber-50 text-amber-700 border-amber-300"
+                                        : "bg-emerald-50 text-emerald-700 border-emerald-300"
                             }`}
                           >
                             <option value="PRESENT">Present</option>
+                            <option value="OD">On Duty (OD)</option>
                             <option value="LATE">Late Arrival</option>
                             <option value="HALF_DAY">Half Day</option>
                             <option value="PERMISSION">Permission</option>
@@ -3053,7 +3072,9 @@ export const AdminHRPage: React.FC = () => {
                         ...quickAttForm,
                         status: newStatus,
                         lateDeduction:
-                          newStatus === "PRESENT" || newStatus === "PERMISSION"
+                          newStatus === "PRESENT" ||
+                          newStatus === "PERMISSION" ||
+                          newStatus === "OD"
                             ? 0
                             : quickAttForm.lateDeduction,
                       });
@@ -3061,11 +3082,17 @@ export const AdminHRPage: React.FC = () => {
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold cursor-pointer"
                   >
                     <option value="PRESENT">Present</option>
+                    <option value="OD">On Duty (OD)</option>
                     <option value="LATE">Late Arrival</option>
                     <option value="HALF_DAY">Half Day</option>
                     <option value="PERMISSION">Permission</option>
                     <option value="ABSENT">Absent</option>
                   </select>
+                  {quickAttForm.status === "OD" && (
+                    <span className="text-[10px] text-blue-600 font-semibold mt-1 block">
+                      Timing not required for On Duty (OD)
+                    </span>
+                  )}
                 </div>
 
                 <div>

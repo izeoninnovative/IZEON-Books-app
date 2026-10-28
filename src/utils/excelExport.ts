@@ -43,10 +43,16 @@ export const exportAttendanceRegisterToExcel = (
   // Map to human-friendly Excel rows
   const rows = entries.map((entry, index) => {
     const isLate =
-      entry.status === "PERMISSION" ? "No (Permission)" : entry.isLate ? "Yes" : "No";
+      entry.status === "PERMISSION" || entry.status === "OD"
+        ? `No (${entry.status === "OD" ? "On Duty" : "Permission"})`
+        : entry.isLate
+        ? "Yes"
+        : "No";
 
     const formattedStatus =
-      entry.status === "PERMISSION"
+      entry.status === "OD"
+        ? "On Duty (OD)"
+        : entry.status === "PERMISSION"
         ? "Permission"
         : entry.status === "LATE"
         ? "Late Arrival"
@@ -68,9 +74,9 @@ export const exportAttendanceRegisterToExcel = (
       "Assigned Shift":
         entry.assignedShift ||
         (entry.shiftInTime ? `${entry.shiftInTime} - ${entry.shiftOutTime || "18:30"}` : "09:30 - 18:30"),
-      "In-Time (Entry)": entry.inTime && entry.inTime.trim() ? entry.inTime : "-",
-      "Out-Time (Exit)": entry.outTime && entry.outTime.trim() ? entry.outTime : "-",
-      "Work Hours (Hrs)": Number(entry.workHours || 0),
+      "In-Time (Entry)": entry.inTime && entry.inTime.trim() ? entry.inTime : (entry.status === "OD" ? "OD" : "-"),
+      "Out-Time (Exit)": entry.outTime && entry.outTime.trim() ? entry.outTime : (entry.status === "OD" ? "OD" : "-"),
+      "Work Hours (Hrs)": Number(entry.workHours || (entry.status === "OD" ? 8 : 0)),
       "Attendance Status": formattedStatus,
       "Is Late?": isLate,
       "Late By (Mins)": Number(entry.lateMinutes || 0),
@@ -82,10 +88,18 @@ export const exportAttendanceRegisterToExcel = (
   // Calculate totals for KPI summary
   const totalEntries = entries.length;
   const totalPresent = entries.filter(
-    (e) => e.status === "PRESENT" || e.status === "LATE" || e.status === "PERMISSION"
+    (e) =>
+      e.status === "PRESENT" ||
+      e.status === "LATE" ||
+      e.status === "PERMISSION" ||
+      e.status === "OD"
   ).length;
+  const totalOD = entries.filter((e) => e.status === "OD").length;
   const totalLate = entries.filter(
-    (e) => (e.isLate || e.status === "LATE") && e.status !== "PERMISSION"
+    (e) =>
+      (e.isLate || e.status === "LATE") &&
+      e.status !== "PERMISSION" &&
+      e.status !== "OD"
   ).length;
   const totalPermission = entries.filter((e) => e.status === "PERMISSION").length;
   const totalDeduction = entries.reduce(
@@ -118,7 +132,7 @@ export const exportAttendanceRegisterToExcel = (
       "S.No": "" as any,
       "Date": "SUMMARY TOTALS",
       "Emp ID": `Total Logs: ${totalEntries}`,
-      "Employee Name": `Present: ${totalPresent} | Perm: ${totalPermission}`,
+      "Employee Name": `Present: ${totalPresent} (OD: ${totalOD}) | Perm: ${totalPermission}`,
       "Department": "",
       "Role": "",
       "Assigned Shift": "",

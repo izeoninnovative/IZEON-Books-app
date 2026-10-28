@@ -173,13 +173,22 @@ export const EmployeePortalPage: React.FC<{ initialTab?: "ATTENDANCE" | "PAYSLIP
       setPunchError(null);
       setPunchSuccess(null);
 
-      // Acquire GPS location
-      const coords = await getGpsCoordinates();
+      // Acquire GPS location (optional if OD since employee is off-site)
+      let coords: { latitude?: number; longitude?: number } = {};
+      if (manualForm.status !== "OD") {
+        coords = await getGpsCoordinates();
+      } else {
+        try {
+          coords = await getGpsCoordinates();
+        } catch (_) {
+          // OD works off-site; GPS failure is non-blocking
+        }
+      }
 
       const res = await api.post("/employee/punch", {
         type: "MANUAL",
-        inTime: manualForm.inTime || undefined,
-        outTime: manualForm.outTime || undefined,
+        inTime: manualForm.status === "OD" ? undefined : (manualForm.inTime || undefined),
+        outTime: manualForm.status === "OD" ? undefined : (manualForm.outTime || undefined),
         status: manualForm.status,
         notes: manualForm.notes || undefined,
         latitude: coords.latitude,
@@ -419,7 +428,11 @@ export const EmployeePortalPage: React.FC<{ initialTab?: "ATTENDANCE" | "PAYSLIP
                       })}
                     </span>
                     {/* Status Badge */}
-                    {todayInfo?.record?.outTime ? (
+                    {todayInfo?.record?.status === "OD" ? (
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 border border-blue-200">
+                        On Duty (OD) • Timing Exempt
+                      </span>
+                    ) : todayInfo?.record?.outTime ? (
                       <span className="px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 border border-blue-200">
                         Shift Completed
                       </span>
@@ -508,20 +521,24 @@ export const EmployeePortalPage: React.FC<{ initialTab?: "ATTENDANCE" | "PAYSLIP
             </div>
 
             {/* Attendance Details Strip for Today */}
-            {todayInfo?.record?.inTime && (
+            {(todayInfo?.record?.inTime || todayInfo?.record?.status === "OD") && (
               <div className="mt-4 pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-4 flex-wrap">
                   <div className="flex items-center gap-1.5 text-slate-600">
                     <span className="font-semibold text-slate-500">In Time:</span>
                     <strong className="font-mono text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">
-                      {todayInfo.record.inTime}
+                      {todayInfo.record.status === "OD" && !todayInfo.record.inTime
+                        ? "OD (Exempt)"
+                        : todayInfo.record.inTime}
                     </strong>
                   </div>
 
                   <div className="flex items-center gap-1.5 text-slate-600">
                     <span className="font-semibold text-slate-500">Out Time:</span>
                     <strong className="font-mono text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">
-                      {todayInfo.record.outTime || "In Progress"}
+                      {todayInfo.record.status === "OD" && !todayInfo.record.outTime
+                        ? "OD (Exempt)"
+                        : todayInfo.record.outTime || "In Progress"}
                     </strong>
                   </div>
 
@@ -764,7 +781,9 @@ export const EmployeePortalPage: React.FC<{ initialTab?: "ATTENDANCE" | "PAYSLIP
                           <td className="px-5 py-3">
                             <span
                               className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border ${
-                                row.status === "PERMISSION"
+                                row.status === "OD"
+                                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                                  : row.status === "PERMISSION"
                                   ? "bg-purple-50 text-purple-700 border-purple-200"
                                   : isLate
                                   ? "bg-rose-50 text-rose-700 border-rose-200"
@@ -775,7 +794,9 @@ export const EmployeePortalPage: React.FC<{ initialTab?: "ATTENDANCE" | "PAYSLIP
                                   : "bg-emerald-50 text-emerald-700 border-emerald-200"
                               }`}
                             >
-                              {row.status === "PERMISSION"
+                              {row.status === "OD"
+                                ? "On Duty (OD)"
+                                : row.status === "PERMISSION"
                                 ? "Permission"
                                 : isLate
                                 ? "Late Arrival"
@@ -1122,48 +1143,64 @@ export const EmployeePortalPage: React.FC<{ initialTab?: "ATTENDANCE" | "PAYSLIP
                 </div>
               </div>
 
-              {/* Locked Timing Display */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center justify-between">
-                    <span>Clock In Time</span>
-                    <span className="text-[10px] text-amber-700 font-bold bg-amber-100/70 px-1.5 py-0.2 rounded">
-                      Locked 🔒
+              {/* Timing Display */}
+              {manualForm.status === "OD" ? (
+                <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center justify-between">
+                  <div>
+                    <span className="font-bold block text-blue-950">
+                      On Duty (OD) Active
                     </span>
-                  </label>
-                  <div className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-mono font-bold text-slate-700 flex items-center justify-between">
-                    <span>
-                      {todayInfo?.record?.inTime ||
-                        currentTime.toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                    <span className="text-[11px] text-blue-700">
+                      No clock-in or clock-out timings are required for today.
                     </span>
-                    <Lock className="w-3.5 h-3.5 text-slate-400" />
                   </div>
+                  <span className="px-2.5 py-1 bg-blue-600 text-white font-bold rounded-lg text-[10px]">
+                    Timing Exempt
+                  </span>
                 </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center justify-between">
+                      <span>Clock In Time</span>
+                      <span className="text-[10px] text-amber-700 font-bold bg-amber-100/70 px-1.5 py-0.2 rounded">
+                        Locked 🔒
+                      </span>
+                    </label>
+                    <div className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-mono font-bold text-slate-700 flex items-center justify-between">
+                      <span>
+                        {todayInfo?.record?.inTime ||
+                          currentTime.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                      </span>
+                      <Lock className="w-3.5 h-3.5 text-slate-400" />
+                    </div>
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center justify-between">
-                    <span>Clock Out Time</span>
-                    <span className="text-[10px] text-amber-700 font-bold bg-amber-100/70 px-1.5 py-0.2 rounded">
-                      Locked 🔒
-                    </span>
-                  </label>
-                  <div className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-mono font-bold text-slate-700 flex items-center justify-between">
-                    <span>
-                      {todayInfo?.record?.outTime ||
-                        (todayInfo?.record?.inTime
-                          ? currentTime.toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "--:--")}
-                    </span>
-                    <Lock className="w-3.5 h-3.5 text-slate-400" />
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center justify-between">
+                      <span>Clock Out Time</span>
+                      <span className="text-[10px] text-amber-700 font-bold bg-amber-100/70 px-1.5 py-0.2 rounded">
+                        Locked 🔒
+                      </span>
+                    </label>
+                    <div className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-mono font-bold text-slate-700 flex items-center justify-between">
+                      <span>
+                        {todayInfo?.record?.outTime ||
+                          (todayInfo?.record?.inTime
+                            ? currentTime.toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "--:--")}
+                      </span>
+                      <Lock className="w-3.5 h-3.5 text-slate-400" />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
@@ -1177,13 +1214,22 @@ export const EmployeePortalPage: React.FC<{ initialTab?: "ATTENDANCE" | "PAYSLIP
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:bg-white focus:border-[#1656a6] cursor-pointer"
                 >
                   <option value="PRESENT">Present (Standard Shift Entry)</option>
+                  <option value="OD">On Duty (OD - Off-site / Field Work - No Time Required)</option>
                   <option value="PERMISSION">
                     Permission (Approved Late / Early Exit - Waives Fine)
                   </option>
                   <option value="HALF_DAY">Half Day</option>
                 </select>
                 <span className="text-[11px] text-slate-400 mt-1 block">
-                  Selecting <strong>Permission</strong> waives late arrival penalty if authorized.
+                  {manualForm.status === "OD" ? (
+                    <span className="text-blue-600 font-semibold">
+                      OD selected: On Duty employees work off-site. No in/out timings are required.
+                    </span>
+                  ) : (
+                    <span>
+                      Selecting <strong>Permission</strong> waives late arrival penalty if authorized.
+                    </span>
+                  )}
                 </span>
               </div>
 
