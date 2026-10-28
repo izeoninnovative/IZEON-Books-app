@@ -4,7 +4,11 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  role: "ADMIN" | "HR";
+  role: "ADMIN" | "HR" | "EMPLOYEE";
+  employeeId?: number | null;
+  empCode?: string | null;
+  designation?: string | null;
+  department?: string | null;
 }
 
 interface AuthContextType {
@@ -12,6 +16,8 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isHR: boolean;
+  isEmployee: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
 }
@@ -58,6 +64,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         token,
         isAuthenticated: !!token,
         isAdmin: user?.role === "ADMIN",
+        isHR: user?.role === "HR",
+        isEmployee: user?.role === "EMPLOYEE",
         login,
         logout,
       }}

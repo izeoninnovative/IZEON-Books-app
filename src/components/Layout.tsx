@@ -14,8 +14,11 @@ export const Layout: React.FC = () => {
     if (pathname.startsWith("/students/")) return "Student Profile & Ledger";
     if (pathname === "/invoices") return "Invoices & Receipts";
     if (pathname === "/reports") return "P&L Financial Reports";
-    if (pathname === "/hr-management") return "HR Staff Management";
+    if (pathname === "/hr-management") return "Staff & Attendance Management";
     if (pathname === "/settings") return "Company & GST Settings";
+    if (pathname === "/my-attendance") return "My Attendance & Timings";
+    if (pathname === "/my-payslips") return "My Salary & Payslips";
+    if (pathname === "/my-appraisals") return "My Appraisals";
     return "IZEON Books";
   };
 
@@ -27,8 +30,8 @@ export const Layout: React.FC = () => {
       {/* Content wrapper: Header is fixed, only main content area scrolls */}
       <div className="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(true)} title={getPageTitle(location.pathname)} />
-        <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-8">
-          <div className="max-w-7xl w-full mx-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-2.5 sm:p-6 lg:p-8 min-w-0">
+          <div className="max-w-7xl w-full mx-auto min-w-0">
             <Outlet />
           </div>
         </main>

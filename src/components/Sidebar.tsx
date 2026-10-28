@@ -10,6 +10,8 @@ import {
   Building2,
   LogOut,
   X,
+  Clock,
+  Award,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import logoImg from "../assets/interview logo.png";
@@ -20,17 +22,27 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, isEmployee, logout } = useAuth();
 
-  const navLinks = [
+  const adminHrNavLinks = [
     { to: "/", icon: LayoutDashboard, label: "Dashboard", adminOnly: false, exact: true },
     { to: "/students", icon: Users, label: "Students", adminOnly: false, exact: true },
     { to: "/students/new", icon: UserPlus, label: "New Admission", adminOnly: false, exact: false },
     { to: "/invoices", icon: Receipt, label: "Invoices & Receipts", adminOnly: false, exact: false },
+    { to: "/my-attendance", icon: Clock, label: "My Attendance", adminOnly: false, exact: false },
     { to: "/reports", icon: BarChart3, label: "P&L Reports", adminOnly: true, exact: false },
-    { to: "/hr-management", icon: UserCheck, label: "HR Management", adminOnly: true, exact: false },
+    { to: "/hr-management", icon: UserCheck, label: "Staff & Attendance", adminOnly: true, exact: false },
     { to: "/settings", icon: Building2, label: "Company & GST", adminOnly: true, exact: false },
   ];
+
+  const employeeNavLinks = [
+    { to: "/", icon: LayoutDashboard, label: "My Dashboard", adminOnly: false, exact: true },
+    { to: "/my-attendance", icon: Clock, label: "My Attendance", adminOnly: false, exact: false },
+    { to: "/my-payslips", icon: Receipt, label: "My Payslips", adminOnly: false, exact: false },
+    { to: "/my-appraisals", icon: Award, label: "My Appraisals", adminOnly: false, exact: false },
+  ];
+
+  const navLinks = isEmployee ? employeeNavLinks : adminHrNavLinks;
 
   return (
     <>
@@ -132,6 +144,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider mt-0.5 ${
                     isAdmin
                       ? "bg-rose-50 text-rose-700 border border-rose-200"
+                      : isEmployee
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                       : "bg-blue-50 text-[#154E98] border border-blue-200"
                   }`}
                 >
