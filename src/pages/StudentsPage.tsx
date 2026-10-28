@@ -260,8 +260,8 @@ export const StudentsPage: React.FC = () => {
             No students found matching your criteria.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto min-w-0">
+            <table className="w-full text-left text-sm min-w-[700px]">
               <thead className="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200 font-semibold tracking-wider">
                 <tr>
                   <th className="px-6 py-3.5">Student</th>

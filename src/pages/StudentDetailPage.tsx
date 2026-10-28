@@ -452,7 +452,8 @@ export const StudentDetailPage: React.FC = () => {
           </div>
 
           <div className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-2xs">
-            <table className="w-full text-left text-sm">
+            <div className="overflow-x-auto min-w-0">
+              <table className="w-full text-left text-sm min-w-[650px]">
               <thead className="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200 font-semibold tracking-wider">
                 <tr>
                   <th className="px-6 py-3.5">Installment</th>
@@ -541,6 +542,7 @@ export const StudentDetailPage: React.FC = () => {
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       )}
@@ -553,7 +555,8 @@ export const StudentDetailPage: React.FC = () => {
         </h3>
 
         <div className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-2xs">
-          <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto min-w-0">
+            <table className="w-full text-left text-sm min-w-[650px]">
             <thead className="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200 font-semibold tracking-wider">
               <tr>
                 <th className="px-6 py-3.5">Invoice No</th>
@@ -630,6 +633,7 @@ export const StudentDetailPage: React.FC = () => {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

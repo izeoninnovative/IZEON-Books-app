@@ -73,7 +73,7 @@ export const LoginPage: React.FC = () => {
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900">Sign In</h2>
             <span className="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1.5 font-medium">
-              <Sparkles className="w-3 h-3 text-[#8a252d]" /> Admin & HR
+              <Sparkles className="w-3 h-3 text-[#8a252d]" /> Admin, HR & Employee Portal
             </span>
           </div>
 
